@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const source = readFileSync(new URL('./analytics.js', import.meta.url), 'utf8');
-function setup(host = 'chancethemaker.github.io', saved = null, blocked = false) {
+function setup(host = 'chancethemaker.github.io', saved = null, blocked = false, path = '/Felucca/webapp/installer/') {
   const scripts = [], handlers = {}, listeners = {}, storage = new Map(), windowListeners = {}, bannerHandlers = {}, mounted = [];
   if (saved) storage.set('felucca.web.analyticsConsent', saved);
   const panel = {setAttribute() {}, close() {}, querySelectorAll: () => [], addEventListener: (k, fn) => {handlers[k] = fn;}};
   const banner = {setAttribute() {}, querySelectorAll: () => [], addEventListener: (k, fn) => {bannerHandlers[k] = fn;}};
   const context = {
     navigator: {language: 'en'},
-    location: {hostname: host, pathname: '/Felucca/webapp/installer/', origin: 'https://' + host, href: 'https://' + host + '/Felucca/webapp/installer/?secret=private'},
+    location: {hostname: host, pathname: path, origin: 'https://' + host, href: 'https://' + host + path + '?secret=private'},
     localStorage: {getItem: k => {if (blocked) throw Error('blocked'); return storage.get(k);}, setItem: (k, v) => {if (blocked) throw Error('blocked'); storage.set(k, v);}},
     document: {readyState:'loading', referrer: 'https://example.org/private?q=secret', documentElement: {lang: 'en', dataset:{skin:'space'}},
       createElement: name => name === 'dialog' ? panel : name === 'section' ? banner : {}, head: {append: s => scripts.push(s)},
@@ -81,5 +81,10 @@ assert.equal(fresh.banner.hidden, false, 'Clearing preferences restores notice')
 assert.equal(fresh.context['ga-disable-G-JVF09MZEGD'], false);
 assert.equal(setup('localhost').banner.hidden, false, 'Local previews show the notice');
 assert.equal(setup('localhost').scripts.length, 0, 'Local previews do not send analytics');
+for (const path of ['/felucca-smk/', '/felucca-smk/editor.html', '/felucca-smk/simulator.html']) {
+  assert.equal(setup('chancethemaker.github.io', null, false, path).scripts.length, 1, 'SMK production path loads Analytics');
+  assert.equal(setup('chancethemaker.github.io', 'denied', false, path).scripts.length, 0, 'SMK opt-out is respected');
+}
+assert.equal(setup('chancethemaker.github.io', null, false, '/felucca-smk-other/').scripts.length, 0);
 assert.doesNotThrow(() => setup('chancethemaker.github.io', null, true).choose('granted'));
 console.log('Analytics consent, host isolation, event filtering, and storage-failure checks passed.');

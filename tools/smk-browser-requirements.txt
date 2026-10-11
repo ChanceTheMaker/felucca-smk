@@ -1,0 +1,3 @@
+# Browser runtime build; no USB, MIDI, or device access.
+Pillow==11.0.0
+ziglang==0.13.0

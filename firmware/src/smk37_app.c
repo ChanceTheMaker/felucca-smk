@@ -7,6 +7,7 @@
  * FM-1 ADC/UART initialization and radio remain disabled. */
 #include <stdint.h>
 #include "smk37_unit.h"
+#include "smk37_version.h"
 #define FELUCCA_FLASH 0
 #ifndef SMK37_ENABLE_PRESETS
 #define SMK37_ENABLE_PRESETS 0
@@ -707,7 +708,7 @@ void smk37_cstart(const uint32_t *boot_parameters)
     smk37_display_ok = (uint8_t)smk37_panel_init(&smk37_panel_io);
     /* One-shot branding; retain normal startup timing and USB identity. */
     draw_text_line(0, (240 - AF_M.h) / 2, 240, &AF_M, "Felucca SMK", 0xffff, 0, 1);
-    draw_text_line(0, 240 - AF_S.h - 10, 240, &AF_S, FELUCCA_VERSION, 0x9cf3, 0, 1);
+    draw_text_line(0, 240 - AF_S.h - 10, 240, &AF_S, SMK37_RELEASE_VERSION, 0x9cf3, 0, 1);
     smk37_boot_state.stage = SMK37_BOOT_SCANNER;
     smk37_adc_init(&smk37_adc);
     /* Stock PC10 idle is low/output. Keep it defined between RGB frames. */

@@ -1,6 +1,6 @@
 # Working with upstream Felucca
 
-These rules govern how **ChanceTheMaker/Felucca** receives updates from
+These rules govern how **ChanceTheMaker/felucca-smk** receives updates from
 **hugelton/Felucca** and offers selected improvements back. Keep Salt current,
 preserve a small, understandable set of differences, and send upstream changes
 that can be reviewed independently. This is our fork's policy; it does not claim
@@ -11,13 +11,17 @@ to be the upstream maintainers' contribution policy.
 | Repository or branch | Purpose | Write policy |
 | --- | --- | --- |
 | `hugelton/Felucca` | Upstream source and release reference | Fetch and inspect; no direct pushes |
-| `ChanceTheMaker/Felucca` | Salt development and contribution branches | Push authorized work here |
+| `ChanceTheMaker/felucca-smk` | SMK development, Studio and simulator | Push authorized SMK work here |
+| `ChanceTheMaker/Felucca` | Separate FM-1 Salt project and existing upstream PR branches | Do not publish SMK work here |
 | Fork `main` | Integrated, reviewable Salt source | PRs with linear history; no force-pushes |
 | Fork `gh-pages` | Published website and selected firmware package | Publish the verified site; preserve the intended firmware version |
 | `integrate/<version>-<feature>` or `feat/<version>-<feature>` | Incoming update and dependent Salt features | One feature per PR; document dependencies |
 | `upstream/<feature>` in the fork | A selected contribution based on upstream main | Only the relevant change, tests, and documentation |
 
-Existing worktrees use **origin for upstream**. Never use a bare `git push` or
+Legacy linked worktrees use **origin for upstream**. The standalone SMK clone
+uses **origin for ChanceTheMaker/felucca-smk** and **upstream for hugelton/Felucca**.
+The initial SMK migration creates `main` and preserves `feat/smk-studio-simulator`
+at the same source checkpoint; later work uses focused PRs. Never use a bare `git push` or
 assume a remote name identifies its owner. Check `git remote -v` and use explicit
 repository URLs until names have been verified. Routine work never rewrites
 either repository's main branch or release tags. Rebasing a feature branch is
@@ -124,7 +128,7 @@ first and substitute the chosen branch and reviewed upstream revision.
 git status --short
 git remote -v
 git fetch https://github.com/hugelton/Felucca.git main:refs/remotes/upstream/main --tags
-git fetch https://github.com/ChanceTheMaker/Felucca.git main:refs/remotes/fork/main
+git fetch https://github.com/ChanceTheMaker/felucca-smk.git main:refs/remotes/smk/main
 git log --oneline <previous-upstream-sha>..upstream/main
 git diff --stat <previous-upstream-sha> upstream/main
 
@@ -135,7 +139,9 @@ git diff upstream/main...HEAD
 git push https://github.com/ChanceTheMaker/Felucca.git HEAD:refs/heads/upstream/<feature>
 ```
 
-For a fork PR, explicitly select `ChanceTheMaker/Felucca` and the intended base.
+For an SMK PR, explicitly select `ChanceTheMaker/felucca-smk` and the intended base.
+The upstream contribution push example above uses the original FM-1 fork only
+for a separately authorized, clean upstream contribution, never the SMK branch.
 For an authorized upstream PR, explicitly select `hugelton/Felucca`, base `main`,
 and head `ChanceTheMaker:upstream/<feature>`. Prepare the description in a file
 or structured tool argument so formatting and literal text are preserved.

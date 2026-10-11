@@ -3,7 +3,8 @@
 (() => {
   'use strict';
   const id = 'G-JVF09MZEGD', key = 'felucca.web.analyticsConsent';
-  const production = location.hostname === 'chancethemaker.github.io' && location.pathname.startsWith('/Felucca/');
+  const production = location.hostname === 'chancethemaker.github.io' &&
+    ['/Felucca/', '/felucca-smk/'].some(path => location.pathname.startsWith(path));
   const allowed = new Set(['install_attempt', 'install_write_started', 'install_success', 'install_failed', 'install_resume_complete', 'browser_audio_started', 'download_click', 'theme_changed']);
   const themes = new Set(['stage','matrix','dx','modeld','chocolate','vapor','midnight','space','bauhaus','ocean','arcade','hicon']);
   const theme = () => themes.has(document.documentElement.dataset?.skin) ? document.documentElement.dataset.skin : 'stage';

@@ -1,5 +1,10 @@
 # Building Felucca
 
+For **Felucca SMK**, start with [the standalone SMK setup](docs/smk37/DEVELOPMENT.md).
+It covers the Studio/simulator, dependencies, and SMK-specific firmware builders.
+The FM-1 build and installation instructions below are retained as upstream
+reference; FM-1 packages are not SMK packages.
+
 The build makes three files in `build/`:
 
 | File | What |

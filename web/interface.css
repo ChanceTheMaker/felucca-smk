@@ -35,9 +35,6 @@ html:has(.installer-page) { scroll-behavior:smooth; }
 .studio-preview-action { display:block; margin-top:6px; padding:9px 12px; border-radius:8px; background:var(--accent); color:var(--bg); text-align:center; font:700 16px/1.4 var(--ui-font); }
 .installer-page .studio-gallery-link { display:flex; flex-direction:row; flex-wrap:wrap; gap:4px 12px; align-items:baseline; justify-content:center; box-sizing:border-box; width:100%; text-align:center; font-size:16px; line-height:1.5; }
 .studio-gallery-subtitle { max-width:100%; white-space:normal; overflow-wrap:anywhere; font-size:1em; font-weight:500; text-transform:none; letter-spacing:normal; }
-.browser-audio #tabs,
-.browser-audio #trackbar, .browser-audio #factlib,
-.browser-audio #play-channel, .browser-audio label:has(#play-channel) { display:none!important; }
 #audio-volume-label:not([hidden]) { display:inline-flex; align-items:center; gap:8px; font-size:12px; }
 #audio-volume { width:90px; }
 #audio-status { font-size:11px; color:var(--dim); }

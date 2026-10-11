@@ -1,10 +1,20 @@
-# Felucca [Salt]
+# Felucca SMK
 
-Felucca [Salt] by Chance Roth (@ChanceTheMaker), based on Felucca by Leo Kuroshita
+Felucca SMK by Chance Roth (@ChanceTheMaker), based on Felucca by Leo Kuroshita
 and Hügelton Instruments. This branch integrates **Felucca 1.5.1 into the SMK-37
 Pro & Elite project**, based on upstream `a4d7ca2`.
 
-**Test19 is the current local candidate.** The owner reported Test18 worked
+The standalone project lives at
+[ChanceTheMaker/felucca-smk](https://github.com/ChanceTheMaker/felucca-smk).
+Start with [SMK development and dependency setup](docs/smk37/DEVELOPMENT.md).
+The original Felucca history, licenses and credits are preserved.
+
+**Current product version: Felucca SMK 0.9.21.** Website labels and the next
+device splash use this version. Existing private Test19–Test21 packages retain
+their original identities; this naming change does not rebuild, publish or flash
+them. The browser-only preview is at `http://localhost:8773/`.
+
+**Private hardware test history:** The owner reported Test18 worked
 well on the SMK. Test18 added grouped navigation, independent
 display/control settings, presets/favorites and naming, FM6 operator editing,
 sound undo, sustained-note monitoring, and upstream rolling-digit animation.
@@ -43,17 +53,20 @@ explains the new lighting and sequence-scale features.
 
 ## Studio and website
 
-Select **Browser** to play the Felucca Synth built into the browser, or **FM-1**
-to edit a connected instrument. The candidate's browser engine includes all
-13 selectable 1.5.1 engines and their factory presets, plus imported FM6 sounds.
-It plays one sound; device sequencing, track mixing, projects and sample uploads
-are not connected to browser playback. See [browser engine details](web/audio/README.md).
+The Studio offers connected-device editing, a browser Studio, and an SMK
+simulator. The browser runtime builds the native SMK synthesis, display, editor,
+sequencer and storage code as WebAssembly. Projects, presets and sample slots
+in browser mode use virtual storage, with session export/import and local saving.
+The standalone simulator reproduces the 37-key panel, pads, knobs, faders,
+wheels, buttons and lighting. It supports key glissando, model finishes,
+fullscreen and a replayable tutorial. Browser audio may require the first user
+gesture before playback is permitted.
 
-The website retains twelve themes, light/dark modes, the live oscilloscope,
-customizable controls, a docked keyboard, and eight interface languages. Its
-installer includes the animated product illustration, interactive FM-1 controls
-guide, compact navigation, theme gallery, and an installer-only back-to-top button.
-The guide describes the 1.0 controls listed below.
+The website retains themes, light/dark modes, the oscilloscope, grouped movable
+Sound controls, a docked keyboard and eight interface languages. Its SMK hero
+cycles through Pro and Elite finishes and links to Studio and Simulator.
+The prebuilt browser runtime is included; no device or vendor firmware is needed
+to try it locally. See the [setup guide](docs/smk37/DEVELOPMENT.md).
 
 The editor follows upstream's protocol: **SONG is command 33; preferences and
 favorites are commands 34–38**. Capability detection supports upstream 1.0 and
@@ -68,18 +81,24 @@ Candidate validation and the remaining device checks are recorded in
 
 ![Felucca 1.0](docs/felucca-1.0.png)
 
-Multi-engine synthesizer firmware for the M-VAVE FM-1. Use Chrome or Edge with a
-USB data cable for installation. The candidate installer adds backup-first
-**Return to official V15**, using an official package you supply; vendor firmware
-is not distributed here. Please report Salt issues in
-[the fork's issue tracker](https://github.com/ChanceTheMaker/Felucca/issues).
+Felucca SMK adapts the multi-engine Felucca synthesizer to the M-VAVE SMK-37
+Pro & Elite. Use Chrome or Edge with a USB data cable for the staged SMK updater.
+Stock firmware and device-specific backups are not distributed here. Report issues in
+[the SMK issue tracker](https://github.com/ChanceTheMaker/felucca-smk/issues).
 
-- Published Salt14 installer: [web installer](https://chancethemaker.github.io/Felucca/webapp/installer/)
-- Published Studio: [web editor](https://chancethemaker.github.io/Felucca/webapp/editor/)
-- Candidate installer: build this branch's site with `web/make_site.py`; see the integration report
-- Build: [BUILDING.md](BUILDING.md)
+- Local SMK installer/Studio/simulator: `python tools/serve_smk37.py --port 8773`
+- SMK setup: [development guide](docs/smk37/DEVELOPMENT.md)
+- Related FM-1 website (separate project): [Felucca Salt](https://chancethemaker.github.io/Felucca/webapp/installer/)
+- Upstream FM-1 build reference: [BUILDING.md](BUILDING.md)
 
-## Features
+## Upstream FM-1 reference
+
+The following inherited feature and control reference describes the FM-1.
+For SMK control mapping, storage sizes and hardware-test results, use the
+linked Test18–Test21 notes above. For example, SMK currently has eight user
+preset slots rather than the FM-1's 32. Do not install an FM-1 package on an SMK.
+
+### Features
 
 - **Thirteen engines** (below), each with its own factory presets
 - **Four tracks**, one synth part each with its own engine and sound (drums are the DRUM engine or

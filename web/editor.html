@@ -8,7 +8,8 @@
 <head>
 <meta charset="utf-8">
 <script defer src="analytics.js"></script>
-<script defer src="site-nav.js"></script>
+<script defer src="site-nav.js?v=smk-simulator"></script>
+<script type="module" src="smk-version.js?v=0.9.21"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-i18n="ui.smkStudioTitle">Felucca SMK — Studio</title>
 <style>
@@ -172,10 +173,12 @@
 </style>
 <link rel="stylesheet" href="skin.css">
 <link rel="stylesheet" href="interface.css">
+<link rel="stylesheet" href="smk-studio.css">
 <link rel="stylesheet" href="fonts.css?v=smk2">
 <script src="locales.js"></script>
 <script src="i18n.js"></script>
 <script src="skin.js"></script>
+<script src="studio-graphs.js"></script>
 </head>
 <body class="editor-page">
 <main id="studio">
@@ -191,8 +194,9 @@
     <div class="bar">
       <button id="connect" data-t="connect" data-ic="port_usb_c"></button>
       <div id="audio-mode" class="mode-switch" role="group" aria-label="Sound source" data-i18n-aria-label="site.sound_source">
-        <button id="mode-fm1" type="button" aria-pressed="true">SMK-37</button>
-        <button id="mode-browser" type="button" aria-pressed="false"><span data-i18n="site.browser">Browser</span></button>
+        <button id="mode-fm1" type="button" aria-pressed="true">SMK Device</button>
+        <button id="mode-simulator" type="button" aria-pressed="false">SMK Simulator</button>
+        <button id="mode-browser" type="button" aria-pressed="false">Browser Studio</button>
       </div>
       <label id="audio-volume-label" hidden><span data-i18n="site.volume">Volume</span> <input id="audio-volume" type="range" min="0" max="100" value="35" aria-label="Browser audio volume" data-i18n-aria-label="site.browser_audio_volume"></label>
       <span id="audio-status" role="status"></span>
@@ -218,6 +222,15 @@
     <div class="trackbar" id="trackbar" hidden><span class="dim" data-t="track"></span><span class="seg" id="trackbtns" role="group"></span></div>
   </header>
   <p class="hint" id="hint" hidden></p>
+  <div id="browser-session" hidden>
+    <button id="session-play" type="button">Play / Stop</button>
+    <button id="session-panic" type="button">Release notes</button>
+    <button id="session-export" type="button">Export session</button>
+    <button id="session-import" type="button">Import session</button>
+    <input id="session-file" type="file" accept=".json,application/json" hidden>
+    <span id="session-status" role="status">Browser sessions stay on this computer.</span>
+  </div>
+  <section id="smk-simulator" hidden aria-label="SMK hardware simulator"></section>
 
   <section class="panel" id="p-sound" data-tab="sound" data-dev hidden>
     <div class="browser" id="browser">
@@ -2751,11 +2764,14 @@ $("tabs").addEventListener("keydown", (e) => {          /* arrow keys move betwe
 window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (TABS.includes(h) && h !== tab) showTab(h); });
 
 const QS = new URLSearchParams(location.search);
-let BROWSER_AUDIO = QS.get('audio') === '1';
+let SIMULATOR = QS.get('view') === 'simulator';
+let BROWSER_AUDIO = QS.get('audio') === '1' || SIMULATOR;
 let MOCK = QS.get("mock") === "1" || BROWSER_AUDIO;
 $("mock").hidden = !MOCK || BROWSER_AUDIO;
 let browserSynth = null;
-const audioModule = import('./audio/browser.js?v=1a65e1d991025089');
+const audioModule = import('./audio/smk-browser.js');
+const simulatorModule = import('./smk-simulator.js');
+let simulator = null;
 const deviceText = Object.fromEntries(I18N.languages.map(({code:l}) => [l, {...TEXT[l]}]));
 function renderAudioMode() {
   for (const {code:l} of I18N.languages) Object.assign(TEXT[l], deviceText[l]);
@@ -2769,7 +2785,11 @@ function renderAudioMode() {
   $('audio-volume-label').hidden = !BROWSER_AUDIO;
   $('audio-scope').hidden = !BROWSER_AUDIO;
   $('mode-fm1').setAttribute('aria-pressed', String(!BROWSER_AUDIO));
-  $('mode-browser').setAttribute('aria-pressed', String(BROWSER_AUDIO));
+  $('mode-browser').setAttribute('aria-pressed', String(BROWSER_AUDIO && !SIMULATOR));
+  $('mode-simulator').setAttribute('aria-pressed', String(SIMULATOR));
+  $('browser-session').hidden = !BROWSER_AUDIO;
+  document.documentElement.classList.toggle('smk-simulation', SIMULATOR);
+  if (!SIMULATOR) $('smk-simulator').hidden = true;
   $('mock').hidden = !MOCK || BROWSER_AUDIO;
   if (BROWSER_AUDIO) I18N.text($('audio-status'), 'ui.audioNoHardware');
   else { delete $('audio-status').dataset.i18n; $('audio-status').textContent = ''; }
@@ -2861,16 +2881,18 @@ async function connect() {
   sayK("connecting");
   try {
     if (BROWSER_AUDIO) {
-      if (!browserSynth) { const {BrowserSynth} = await audioModule; browserSynth = new BrowserSynth(); }
+      if (!browserSynth) { const {SMKBrowserSynth} = await audioModule; browserSynth = new SMKBrowserSynth(); }
       await browserSynth.start();
       window.FeluccaAnalytics?.track('browser_audio_started');
       browserSynth.showScope($('scope-canvas'));
       browserSynth.volume(Number($('audio-volume').value) / 100);
-      I18N.text($('audio-status'), 'ui.audioOneSound');
+      delete $('audio-status').dataset.i18n;
+      $('audio-status').textContent = 'Native SMK engine · Browser audio';
+      if (!simulator) { const {createSMKSimulator} = await simulatorModule; simulator = createSMKSimulator($('smk-simulator'), browserSynth); }
     }
     if (!access) {
-      if (MOCK) { mock = makeMockDevice(BROWSER_AUDIO ? {auto: false, uiCaps: 0, presets: browserSynth.presets,
-        onMidi: bytes => browserSynth.midi(bytes), onState: state => browserSynth.sync(state)} : { legacy: QS.get("legacy") === "1" }); access = mock.access; }
+      if (BROWSER_AUDIO) access = browserSynth.access;
+      else if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1" }); access = mock.access; }
       else {
         try { access = await navigator.requestMIDIAccess({ sysex: true }); }
         catch (e) { sayK("denied"); return; }
@@ -2895,7 +2917,10 @@ async function connect() {
     connectedDevice = dev;
     setLabel($("connect"), t("disconnect"));
     await load(connectedDevice);
-    if (dev === connectedDevice) playKeyboard.connect(dev.output);
+    if (dev === connectedDevice) {
+      playKeyboard.connect(SIMULATOR ? null : dev.output);
+      if (BROWSER_AUDIO) simulator.show(SIMULATOR);
+    }
   } catch (e) {
     console.error(e);
 
@@ -2917,6 +2942,7 @@ async function connect() {
 }
 
 function disconnect(reasonKey = "disconnected") {
+  simulator?.show(false);
   playKeyboard.connect(null);
   if (BROWSER_AUDIO) { browserSynth?.stop(); I18N.text($('audio-status'), 'ui.audioStopped'); }
   samplesLeave();                                   /* the Samples tab goes: so do the input and the preview */
@@ -2968,8 +2994,8 @@ async function load(d) {
   try {
     /* the first frame after opening the port can be lost: a few tries */
     d.info = parse[CMD.INFO](await sessionRequest(d, req.info(), { timeout: 500, retries: 3 }));
-    $("version").textContent = BROWSER_AUDIO ? "" : d.info.version;
-    if (!BROWSER_AUDIO) $("mode-fm1").textContent = /SMK37/.test(d.info.version) ? "SMK-37" : "FM-1";
+    $("version").textContent = d.info.version;
+    if (!BROWSER_AUDIO) $("mode-fm1").textContent = /SMK37/.test(d.info.version) ? "SMK Device" : "FM-1";
     renderPlayKeys();
     const total = d.info.pcount + d.info.gcount;
     for (let i = 0; i < d.info.pcount; i++) { sayK("reading", `${i + 1}/${total}`); d.pdesc[i] = await getDescOrNull(0, i, d); }
@@ -3119,6 +3145,23 @@ function modDst(d, txt) {
   return e && visible(e) ? e.label : txt;
 }
 
+function groupSoundCards(cards) {
+  const sections = [
+    ['Instrument', ['EDIT','OP ENV']], ['Voice', ['VOICE']],
+    ['Envelope', ['ENV']], ['Modulation', ['LFO','MOD']],
+    ['Effects', ['FX','INSERT']], ['Performance', ['SCL','ARP']]
+  ];
+  const used = new Set(), result = [];
+  for (const [name, categories] of sections) {
+    const members = cards.filter(c => categories.includes(c.dataset.section));
+    if (!members.length) continue;
+    const section = el('div', {class:'group studio-section', 'data-card-key':'smk:section:'+name}, el('h2', {text:name}));
+    const grid = el('div', {class:'section-grid'});
+    for (const c of members) { used.add(c); c.classList.add('section-bank'); delete c.dataset.cardKey; grid.append(c); }
+    section.append(grid); result.push(section);
+  }
+  return [...result, ...cards.filter(c => !used.has(c))];
+}
 function buildGroups() {
   ctl.clear();
   dev.built = dev.dump.engine;
@@ -3137,6 +3180,7 @@ function buildGroups() {
           for (let j = 0; j < 3; j++) ctl.get(key(0, g.mod + 3 * k + j)).row = row;   /* (the push highlight) */
           div.append(row);
         }
+        div.dataset.section = "MOD";
         groups.groups.push(div);
         continue;
       }
@@ -3163,9 +3207,10 @@ function buildGroups() {
     groups.setgroups.push(c);
   }
   for (const [id, divs] of Object.entries(groups)) {
-    $(id).replaceChildren(...divs);
+    $(id).replaceChildren(...(id === "groups" && knownLayout(info) ? groupSoundCards(divs) : divs));
     window.FeluccaSkin?.decorate($(id), `${id}:${dev.dump.engine}`);
   }
+  window.SMKStudioGraphs?.mount($('groups'));
 }
 
 function paramRow(s, id) {
@@ -3228,6 +3273,7 @@ function showValue(k, v, force) {
   if (c.input.type === "range") c.input.setAttribute("aria-valuetext", c.out.textContent);
   if (force || !touched(k)) c.input.value = String(v);
   window.FeluccaSkin?.sync(c.input);
+  window.SMKStudioGraphs?.refresh();
 }
 /* the user is working on this control: polling and pushes must not move it */
 function touched(k) {
@@ -5236,7 +5282,7 @@ $("connect").addEventListener("click", () => {
 async function switchAudioMode(browser) {
   if ($('connect').disabled) return;
   if (browser === BROWSER_AUDIO) { if (browser && !dev) await connect(); return; }
-  $('mode-fm1').disabled = $('mode-browser').disabled = true;
+  $('mode-fm1').disabled = $('mode-browser').disabled = $('mode-simulator').disabled = true;
   try {
     // Finish an in-flight editor operation instead of silently ignoring the switch.
     while (busy > 0 && dev) await sleep(20);
@@ -5254,10 +5300,51 @@ async function switchAudioMode(browser) {
     history.replaceState(null, '', url.pathname + url.search + '#sound');
     renderAudioMode(); applyLang(); showTab('sound');
     if (browser) await connect(); else sayK('disconnected');
-  } finally { $('mode-fm1').disabled = $('mode-browser').disabled = false; }
+  } finally { $('mode-fm1').disabled = $('mode-browser').disabled = $('mode-simulator').disabled = false; }
 }
-$('mode-fm1').onclick = () => switchAudioMode(false);
-$('mode-browser').onclick = () => switchAudioMode(true);
+async function selectPlayMode(mode) {
+  if (connecting || $('connect').disabled) return;
+  SIMULATOR = mode === 'simulator';
+  if (BROWSER_AUDIO && mode !== 'device') {
+    playKeyboard.connect(null); simulator?.release();
+    renderAudioMode();
+    if (!dev) await connect();
+    if (dev) { simulator.show(SIMULATOR); playKeyboard.connect(SIMULATOR ? null : dev.output); }
+  } else await switchAudioMode(mode !== 'device');
+  const url = new URL(location.href);
+  if (SIMULATOR) url.searchParams.set('view', 'simulator'); else url.searchParams.delete('view');
+  history.replaceState(null, '', url.pathname + url.search + url.hash);
+}
+$('mode-fm1').onclick = () => selectPlayMode('device');
+$('mode-browser').onclick = () => selectPlayMode('studio');
+$('mode-simulator').onclick = () => selectPlayMode('simulator');
+document.querySelector('.site-nav').addEventListener('click', async e => {
+  const link=e.target.closest('[data-nav="simulator"]');
+  if(!link||!BROWSER_AUDIO||!browserSynth?.node||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
+  e.preventDefault();if(busy>0)return;
+  busy++;
+  try{simulator?.release();playKeyboard.panic();await browserSynth.save();await browserSynth.stop();location.assign(link.href);}
+  catch(error){$('status').textContent='Could not save before leaving: '+error.message;}
+  finally{busy--;}
+});
+$('session-play').onclick = () => { browserSynth?.panel(0,16,1); browserSynth?.panel(0,16,0); };
+$('session-panic').onclick = () => { simulator?.release(); playKeyboard.panic(); };
+$('session-export').onclick = async () => {
+  try { const data = await browserSynth.exportSession(); downloadBytes('felucca-smk-session.json', new TextEncoder().encode(JSON.stringify(data))); }
+  catch (e) { $('session-status').textContent=e.message; }
+};
+$('session-import').onclick = () => $('session-file').click();
+$('session-file').onchange = async e => {
+  const file=e.target.files[0]; e.target.value=''; if(!file || !browserSynth || !dev) return;
+  try { if(file.size>2000000) throw Error('Session file is too large');
+    await browserSynth.importSession(JSON.parse(await file.text())); await load(dev);
+    $('session-status').textContent='Session imported into the browser.';
+  } catch(e) { $('session-status').textContent=e.message; }
+};
+setInterval(() => {
+  if (BROWSER_AUDIO && browserSynth?.storageMessage) $('session-status').textContent=browserSynth.storageMessage;
+  for(const id of ['session-play','session-panic','session-export','session-import']) $(id).disabled=!BROWSER_AUDIO || !dev || busy>0;
+}, 1000);
 // A one-time, anchored introduction to the two sound sources.
 const modeTip = document.createElement('aside');
 modeTip.className = 'mode-tip'; modeTip.hidden = true;

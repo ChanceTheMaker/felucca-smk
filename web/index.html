@@ -1,9 +1,12 @@
 <!doctype html>
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<base href="/"><title data-i18n="ui.smkInstallerTitle">Felucca SMK — Installer</title>
+<base href="./"><title data-i18n="ui.smkInstallerTitle">Felucca SMK — Installer</title>
 <link rel="stylesheet" href="skin.css"><link rel="stylesheet" href="interface.css"><link rel="stylesheet" href="fonts.css?v=smk2">
 <script src="locales.js"></script><script src="i18n.js"></script><script src="skin.js"></script>
+<script defer src="site-nav.js?v=smk-simulator"></script>
+<script defer src="analytics.js"></script>
+<script type="module" src="smk-version.js?v=0.9.21"></script>
 <link rel="stylesheet" href="smk37-landing.css">
 <script defer src="studio-preview.js"></script><script defer src="smk37-landing.js"></script><script defer src="panel-guide.js"></script>
 <style>
@@ -15,13 +18,13 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
 @media(max-width:740px){.device-gallery,.install-paths{grid-template-columns:1fr}.device-gallery{gap:28px}.smk-hero>*,.feature-grid>*{min-width:0}.control-table th,.control-table td{padding:8px;font-size:12px}}
 @media(max-width:740px){main{padding:10px}.smk-hero,.feature-grid{grid-template-columns:1fr}.masthead nav{flex-wrap:wrap}.smk-screen{margin:0}}
 </style></head><body class="installer-page" data-studio-preview-path="screenshots/smk/themes/{skin}-{mode}.webp"><main id="page-top">
-<header class="masthead"><div class="brand-row"><div><div class="eyebrow" data-i18n="site.smk_supported_models">For SMK-37 Pro &amp; Elite</div><h1><a class="brand-home" href="/"><em>Felucca SMK</em></a></h1><p class="tagline" data-i18n="site.small_instrument_big_possibilities">SMALL INSTRUMENT. BIG POSSIBILITIES.</p></div><nav class="site-nav" aria-label="Main navigation"><a href="#install">Install</a><a href="editor.html">Studio &#8599;</a><a href="#themes">Themes</a><a href="#features">Features</a><a href="#guide">Manual</a></nav><div class="brand-links"></div></div><div data-appearance class="appearance" aria-label="Website appearance"></div></header>
+<header class="masthead"><div class="brand-row"><div><div class="eyebrow" data-i18n="site.smk_supported_models">For SMK-37 Pro &amp; Elite</div><h1><a class="brand-home" href="index.html"><em>Felucca SMK</em></a></h1><p class="tagline" data-i18n="site.small_instrument_big_possibilities">SMALL INSTRUMENT. BIG POSSIBILITIES.</p></div><nav class="site-nav" aria-label="Main navigation"><a href="#install">Install</a><a href="editor.html">Studio &#8599;</a><a href="#themes">Themes</a><a href="#features">Features</a><a href="#guide">Manual</a></nav><div class="brand-links"></div></div><div data-appearance class="appearance" aria-label="Website appearance"></div></header>
 <div class="install-console">
 <section class="smk-hero installer-hero">
 <div><div class="smk-launch-label">CUSTOM FIRMWARE</div><h2>A little synth.<br>A bigger playground.</h2>
 <p class="smk-launch-copy"><strong>The first custom firmware for SMK-37 Pro &amp; Elite.</strong> A revolutionary new way to play, shape, and sequence.</p><p class="smk-launch-detail">Play right in your browser or connect your keyboard. Expressive sounds, four tracks, and a hands-on Studio that feels like hardware.</p>
-<div class="hero-actions"><div class="install-action"><a id="go" href="#install">Install Felucca SMK Beta</a><p id="release" class="small">Local beta · loading version…</p></div><a class="hero-link" data-studio-preview href="editor.html">Open Studio ↗</a></div>
-<p class="smk-beta small">This firmware is a beta.<br>Provided without warranty. Keep your stock backup and recovery adapter available.</p></div>
+<div class="hero-actions"><div class="install-action"><a id="go" href="#install">Install Felucca SMK Beta</a><p id="release" class="small">Local beta · loading version…</p></div><a class="hero-link" data-studio-preview href="editor.html">Open Studio ↗</a><a class="hero-link" href="simulator.html">Open Simulator ↗</a></div>
+<p class="smk-beta small">This firmware is a beta.<br>Provided without warranty. Keep a backup of your sounds and settings.</p></div>
 <figure class="smk-instrument" data-current-finish="red"><svg viewBox="0 0 960 430" role="img" aria-labelledby="smk-hero-title smk-hero-desc" xmlns="http://www.w3.org/2000/svg">
 <title id="smk-hero-title">SMK-37 Pro Red</title><desc id="smk-hero-desc">37 piano keys, sixteen pads, eight encoders, four faders, pitch and modulation wheels, and a color display.</desc>
 <defs><linearGradient id="smk-sheen" x2=".3" y2="1"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".48" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".24"/></linearGradient><linearGradient id="smk-key" x2="0" y2="1"><stop stop-color="#eee"/><stop offset=".75" stop-color="#fff"/><stop offset="1" stop-color="#d4d6d3"/></linearGradient>
@@ -36,14 +39,14 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
   <p class="small">This local installer serves a private Pro test package matched to the backed-up test device and its calibration. It is not a general download for other units.</p>
   <details class="smk-install-help"><summary>First installation or coming from stock firmware?</summary><div class="install-paths">
     <article><h3>Already running the SMK USB updater?</h3><p>Test11 and later updater-enabled builds can receive the next candidate directly over a normal USB cable. Connect the SMK directly to the computer, power it on, and use Chrome or Edge.</p></article>
-    <article><h3>Still on stock firmware or Test10?</h3><p>A one-time recovery-adapter installation of an updater-enabled build is needed first. This page cannot add an updater to stock firmware. Keep the verified stock backup and unit calibration for that step.</p></article>
+    <article><h3>Still on stock firmware or Test10?</h3><p>First installation and updates must use the package intended for your SMK model. The installer checks compatibility before programming.</p></article>
   </div></details>
   <div class="status-box">
     <p id="status" role="status">Loading local candidate information...</p>
 
-    <label><input type="checkbox" id="ack"> I am testing the private candidate on the backed-up SMK, and have the recovery adapter available.</label>
+    <label><input type="checkbox" id="ack"> I understand this is beta firmware and have backed up my sounds and settings.</label>
     <button class="primary" id="install-button" disabled>Install SMK beta</button>
-    <p class="small">Keep USB and device power connected until installation completes. The update writes only the application area; project and preset storage, calibration, and the bootloader are outside that range. Interrupted application programming can require recovery with the adapter.</p>
+    <p class="small">Keep USB and device power connected until installation completes. The update writes only the application area; project and preset storage, calibration, and the bootloader are outside that range. Do not disconnect or switch off the keyboard while programming.</p>
     <details><summary>Installation log</summary><pre id="log" aria-live="polite"></pre></details>
   </div>
   <details class="beta-notes"><summary>Beta status and current limits</summary>
@@ -67,7 +70,7 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
     <article><h3>Build a song</h3><p>Arrange up to 16 sections. Each track can borrow a pattern from saved projects A&ndash;D or stay silent, with 1&ndash;16 repeats per section.</p></article>
     <article><h3>Shape a pattern</h3><p>Reverse, shift, clear or generate a sequence, with one-level pattern undo/redo. Sound edits and preset loads have their own gesture-based undo/redo. Drum-lane tools let you work on one lane at a time.</p></article>
     <article><h3>Keep your sounds</h3><p>Browse by engine or favorites, rename on the device, and sync stars with Studio. Eight device preset slots store your sounds, including FM6 patches. Four project slots keep sounds, patterns, song configuration and settings together.</p></article>
-    <article><h3>Connected Studio</h3><p>Edit the connected SMK over USB, manage sounds in Library, and load or save projects. Browser mode plays a single synth sound on your computer; device sequencing and storage use the connected keyboard.</p></article>
+    <article><h3>Connected Studio</h3><p>Edit the connected SMK over USB, manage sounds in Library, and load or save projects. Browser Studio and Simulator run the native SMK engine, sequencing and virtual storage on your computer.</p></article>
     <article><h3>Made for hands-on control</h3><p>Bank 1 follows the FM-1: volume, tempo, presets, track, then four page parameters. Hold GLO for grouped navigation or BT for Settings. FM6 operator and envelope pages use upstream editing rules. The MIDI monitor shows events or sounding notes, including sustain. MIDI Learn and Program Change add external control.</p></article>
     <article><h3>Your look</h3><p>Choose Stage Red, Matrix, Vintage DX7, Model D, Vaporwave and more for Studio. The device has 23 palettes and regular or bold text, including light and high-contrast choices.</p></article>
   </div>
@@ -87,4 +90,4 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
 
 </div>
 <footer>Felucca SMK by Chance Roth (<a href="https://github.com/ChanceTheMaker" target="_blank" rel="noopener">@ChanceTheMaker</a>). Based on Felucca by Leo Kuroshita (@kurogedelic), H&uuml;gelton Instruments. GPL-3.0. M-VAVE, FM-1, and SMK-37 are trademarks of their respective owners.</footer>
-</main><script type="module" src="smk37-installer.js"></script></body></html>
+</main><script type="module" src="smk37-installer.js?v=0.9.21"></script></body></html>

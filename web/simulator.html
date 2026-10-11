@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Felucca SMK — Simulator</title>
+<link rel="stylesheet" href="skin.css">
+<link rel="stylesheet" href="interface.css">
+<link rel="stylesheet" href="smk-studio.css">
+<link rel="stylesheet" href="fonts.css?v=smk2">
+<script src="locales.js"></script><script src="i18n.js"></script><script src="skin.js"></script>
+<script defer src="site-nav.js?v=smk-simulator"></script><script defer src="analytics.js"></script>
+<script type="module" src="smk-version.js?v=0.9.21"></script>
+<style>
+body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.4 system-ui,sans-serif}main{max-width:1400px;margin:auto;padding:24px}a{color:inherit}button{font:inherit;cursor:pointer}button:disabled{opacity:.45;cursor:default}[hidden]{display:none!important}.bar{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:14px}#audio-volume-label{display:flex;align-items:center;gap:10px}#audio-volume{width:120px}#audio-status{margin-left:auto}.sim-intro{padding:28px 0;text-align:center}.sim-intro h2{font-size:24px}.sim-intro p{color:var(--dim)}footer{font-size:11px;line-height:1.8;margin-top:24px}#session-status{flex:1;text-align:right}@media(max-width:700px){main{padding:12px}#audio-status{width:100%;margin:0}}
+</style>
+</head>
+<body class="simulator-page">
+<main id="simulator">
+<header class="masthead"><div class="brand-row">
+  <div><div class="eyebrow">Sound laboratory</div><h1><a class="brand-home" href="index.html"><em>Felucca SMK</em></a></h1><p class="tagline">For SMK-37 Pro &amp; Elite</p></div>
+  <nav class="site-nav" aria-label="Main navigation"><a href="index.html#install" data-nav="install" data-i18n="nav.install">Install</a><a href="index.html#guide" data-nav="manual" data-i18n="nav.manual">Manual</a><a href="editor.html?audio=1" data-nav="studio" data-i18n="nav.studio">Studio</a><a href="simulator.html" data-nav="simulator" aria-current="page">Simulator</a><a href="index.html#themes" data-nav="themes" data-i18n="nav.themes">Themes</a><a href="index.html#features" data-nav="features" data-i18n="nav.features">Features</a></nav>
+  <div class="brand-links"><button class="lang" id="lang" type="button"></button></div>
+</div><div data-appearance class="appearance" aria-label="Website appearance"></div></header>
+<header class="top">
+  <div class="bar" id="audio-mode"><button id="sim-audio" type="button">Enable audio</button><strong>SMK Simulator</strong><label id="audio-volume-label">Volume <input id="audio-volume" type="range" min="0" max="100" value="35" aria-label="Browser audio volume"></label><span id="audio-status" role="status">Play in your browser. No device needed.</span></div>
+  <div class="audio-scope"><canvas id="scope-canvas" aria-label="Live browser audio waveform"></canvas></div>
+</header>
+<div id="browser-session"><button id="session-play" type="button" disabled>Play / Stop</button><button id="session-panic" type="button" disabled>Release notes</button><button id="session-export" type="button" disabled>Export session</button><button id="session-import" type="button" disabled>Import session</button><input id="session-file" type="file" accept=".json,application/json" hidden><span id="session-status" role="status">Shares browser sessions with Studio.</span></div>
+<section class="sim-intro" id="sim-intro"><h2>Your SMK, right in the browser.</h2><p>Starting the native Felucca SMK engine. If your browser blocks autoplay, click Enable audio.</p></section>
+<section id="smk-simulator" hidden aria-label="SMK hardware simulator"></section>
+<noscript>This simulator requires JavaScript and a browser with Web Audio support.</noscript>
+<footer>Felucca SMK by Chance Roth (<a href="https://github.com/ChanceTheMaker">@ChanceTheMaker</a>).<br>Based on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com/">Hügelton Instruments</a>. GPL-3.0.<br>M-VAVE, FM-1 and SMK-37 are trademarks of their respective owners. <a href="FUKIAI-LICENSE.txt">Icon licenses</a>.</footer>
+</main>
+<script type="module" src="simulator-page.js?startup=2"></script>
+</body>
+</html>

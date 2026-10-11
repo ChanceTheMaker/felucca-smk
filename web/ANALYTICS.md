@@ -1,7 +1,7 @@
 # Website analytics
 
 The Salt installer and Studio use GA4 measurement ID `G-JVF09MZEGD`.
-Only `chancethemaker.github.io/Felucca/` sends analytics. Local previews,
+Only `chancethemaker.github.io/Felucca/` and `chancethemaker.github.io/felucca-smk/` send analytics. Local previews,
 other forks, and upstream sites do not. Analytics cookies are enabled by default.
 A bottom notice offers Keep analytics, Essential only, and Cookie settings.
 Essential only disables analytics; the settings menu can reopen the choice.

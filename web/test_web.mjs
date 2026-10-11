@@ -1432,7 +1432,7 @@ async function editorSessions() {
   const S = vm.runInNewContext(`let dev = null, lastDump = 0, libBusy = false; ${state} ${requests} ${loading} ${library}
     ;({ beginBusy, resetBusy, sessionRequest, load, libOp,
        setDevice: d => { dev = d; }, count: () => busy })`, {
-    Date, Error,
+    Date, Error, BROWSER_AUDIO: false,
     $: id => { if (!nodes.has(id)) nodes.set(id, {}); return nodes.get(id); },
     CMD: { INFO: 1, PROJECT: 2, SMP_INFO: 3, DUMP: 4 },
     parse: { 1: r => r, 2: () => ({ used: false }), 3: () => ({}), 4: r => r },

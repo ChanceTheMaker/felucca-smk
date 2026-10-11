@@ -22,10 +22,11 @@ try {
   const consent = page.locator('.analytics-banner [data-choice=denied]');
   if (await consent.isVisible()) await consent.click();
   await page.keyboard.press('Escape');
-  await page.getByRole('button',{name:'Browser',exact:true}).click();
+  await page.locator('#mode-browser').click();
   await page.waitForFunction(()=>document.querySelector('#status').textContent==='Audio ready');
-  assert.equal(await page.locator('#trackbar').isVisible(),false);
-  assert.equal(await page.locator('#tabs').isVisible(),false);
+  assert.equal(await page.locator('#trackbar').isVisible(),true);
+  assert.equal(await page.locator('#tabs').isVisible(),true);
+  assert.equal(await page.locator('#groups > .studio-section').count(),6);
   assert.equal(await page.locator('#mode-fm1').isVisible(),true);
   assert.equal(await page.locator('#mode-browser').getAttribute('aria-pressed'),'true');
   assert.equal(await page.locator('#audio-scope').isVisible(),true);
@@ -54,8 +55,13 @@ try {
   await page.waitForFunction(()=>window.testAudioContext.state==='suspended');
   assert.equal(await page.locator('#audio-scope').isVisible(),false);
   assert.equal(await page.locator('#tabs').isVisible(),true);
-  await page.getByRole('button',{name:'Browser',exact:true}).click();
+  await page.locator('#mode-browser').click();
   await page.waitForFunction(()=>document.querySelector('#status').textContent==='Audio ready');
+  await page.locator('#mode-simulator').click();
+  assert.equal(await page.locator('.sim-key').count(),37);
+  assert.equal(await page.locator('.sim-pad').count(),16);
+  assert.equal(await page.locator('#tabs').isVisible(),false);
+  await page.locator('#mode-browser').click();
   await mkdir('build/screenshots',{recursive:true});
   await page.screenshot({path:'build/screenshots/browser-audio-stage.png'});
   assert.deepEqual(errors,[]);
@@ -63,7 +69,9 @@ try {
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Mobile mode switch and scope fit');
   console.log('Browser audio: mode toggle/autostart, live scope, keyboard audio, MIDI isolation, engine switch, stop/restart, mobile layout passed');
 } catch(error) {
-  await page.screenshot({path:'build/screenshots/browser-audio-failure.png'});
+  console.error('Original browser regression failure:',error);
+  await mkdir('build/screenshots',{recursive:true});
+  await page.screenshot({path:'build/screenshots/browser-audio-failure.png',timeout:5000}).catch(()=>{});
   console.error(errors, await page.locator('#status').textContent(), await page.locator('#audio-status').textContent(), await page.locator('#mode-fm1').getAttribute('aria-pressed'));
   throw error;
 } finally { await browser.close(); }

@@ -5,6 +5,19 @@ the current implementation or publish.
 
 ## Website
 
+- [x] **Dedicated SMK simulator page (local, 2026-10-11).**
+  `web/simulator.html` reuses the native browser engine and simulator controls,
+  with a top-navigation link from the homepage and Studio. Includes audio,
+  session import/export, shared browser storage, finish swatches, tutorial and
+  fullscreen. Normal navigation between the running browser Studio and the
+  simulator saves the session before leaving. Existing embedded simulator mode
+  remains available. Preview: `http://localhost:8773/simulator.html`.
+  Native runtime remains based on the SMK branch at `4831471`, with upstream
+  Felucca 1.5.1 pinned at `a4d7ca2e5d52a4c35e2468401f00d883cadbda03`.
+  Web protocol regression suite and JavaScript syntax checks pass; local Chrome
+  startup, display and navigation checked. No device firmware or publication
+  changed. New simulator-specific labels currently remain in English.
+
 - [x] **Make the header logo link to the homepage.** Implemented locally after
   the owner brought it into scope on 2026-10-05. The “Felucca [Salt]” logo on both
   pages links to the installer homepage, with its size/styling preserved and
