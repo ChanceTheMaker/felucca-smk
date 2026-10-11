@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Build locally from the owner's official package. Vendor binaries are never
 // fetched by this module or uploaded; the public download is our GPL app only.
-import {Package,crc16,sha256hex} from './fm1pkg.js?v=0.9.22-r2';
-import {crc32,HEADER,LO,HI} from './smk37-update.js?v=0.9.22-r2';
+import {Package,crc16,sha256hex} from './fm1pkg.js?v=0.9.22-r4';
+import {crc32,HEADER,LO,HI} from './smk37-update.js?v=0.9.22-r4';
 const profiles = Object.freeze({
   '2d98ce72530e71d617384963423820536f094501299e2cfec0a8d3c3fb6bcfb0': {model:'SMK-37 Pro',blocks:36,appBytes:619704},
   'b2ee38abfef3ae922e4eecdb8a551e14345300ae6f270265feacd33b6ef99cb6': {model:'SMK-37 Elite',blocks:20,appBytes:621320}

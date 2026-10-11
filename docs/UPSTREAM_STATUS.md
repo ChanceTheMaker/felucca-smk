@@ -528,3 +528,13 @@ Pedal mapping and runtime flash reads require the next hardware pass. Details,
 limitations and save-enablement prerequisites are in smk37/SOUND_CONTROLS.md.
 
 Test09 hardware follow-up: owner confirmed velocity response, pedal ADC23, runtime read probe, bidirectional editor, lit step editing/playback and pad bank2. Test10 SAVE is a private sustain/persistence candidate with separate save-only adapter recovery preparation. Tests pass; adapter hardware verification, new-image approval and physical save/load/reboot tests remain pending. No push, PR or publication.
+
+## Installer readiness fix (2026-10-11)
+
+Upstream remains Felucca 1.5.1 (`a4d7ca2e5d52a4c35e2468401f00d883cadbda03`).
+Website-only change: automatic Pro/Elite package preparation, cache revision r4,
+and local Test21 migration selection. The published 0.9.22 application is unchanged.
+Both models reached ready status in Chrome; updater regression tests passed.
+The owner installed the private migration successfully with verified readback and
+returned identity SMK-37_922. Stock first-install hardware confirmation remains
+pending. Private packages stay outside Git and Pages. Fork-only contribution.

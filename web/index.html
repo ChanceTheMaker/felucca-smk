@@ -36,17 +36,18 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
   <h2>To install:</h2>
   <p>Connect your SMK directly to the computer by USB and power it on. Open this page in <strong>Chrome or Edge</strong>.</p>
   <p>Close Studio and other MIDI apps, confirm the version, then use the installer below. <strong>Do not unplug USB or switch off while writing.</strong></p>
-  <p>Select the official <strong>SMK-37 Pro 016</strong> or <strong>SMK-37 Elite 016</strong> <code>.fwsc</code> file for your model. Your browser uses it to prepare Felucca SMK locally; the file is not uploaded. Unzip the official download first.</p>
+  <p>Choose your <strong>SMK-37 Pro</strong> or <strong>SMK-37 Elite</strong>. The installer automatically downloads the required official 016 file from a pinned mirror, checks its checksum, and prepares Felucca SMK in your browser. No file selection or upload is needed.</p>
   <details class="smk-install-help"><summary>First installation or coming from stock firmware?</summary><div class="install-paths">
-    <article><h3>First installation</h3><p>Your keyboard must be running official firmware 016. Choose the file for the same Pro or Elite model, select First installation, then install over normal USB.</p></article>
+    <article><h3>First installation</h3><p>Your keyboard must be running official firmware 016. Choose the same Pro or Elite model, select First installation, then install over normal USB.</p></article>
     <article><h3>Updating Felucca SMK</h3><p>Choose Update for public version 0.9.22 or later. Earlier private Test11–Test21 builds use a different updater and require a separate migration; this installer will stop before writing to them.</p></article>
   </div></details>
   <div class="status-box">
     <p id="status" role="status">Checking firmware availability...</p>
 
     <div id="public-package-controls">
-      <label for="stock-file">Official firmware file for your model <input id="stock-file" type="file" accept=".fwsc"></label>
+      <label for="smk-model">Keyboard model <select id="smk-model"><option>SMK-37 Pro</option><option>SMK-37 Elite</option></select></label>
       <label for="install-path">Installation type <select id="install-path"><option value="stock">First installation — official 016 firmware</option><option value="update">Update — Felucca SMK 0.9.22 or later</option></select></label>
+      <details id="manual-file"><summary>Automatic download unavailable?</summary><label for="stock-file">Use an official 016 .fwsc file instead <input id="stock-file" type="file" accept=".fwsc"></label></details>
     </div>
     <label><input type="checkbox" id="ack"> I understand this is beta firmware, have backed up my sounds and settings, and accept that a failed installation may require hardware recovery.</label>
     <button class="primary" id="install-button" disabled>Install SMK beta</button>
@@ -95,4 +96,4 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
 
 </div>
 <footer>Felucca SMK by Chance Roth (<a href="https://github.com/ChanceTheMaker" target="_blank" rel="noopener">@ChanceTheMaker</a>). Based on Felucca by Leo Kuroshita (@kurogedelic), H&uuml;gelton Instruments. GPL-3.0. M-VAVE, FM-1, and SMK-37 are trademarks of their respective owners.</footer>
-</main><script src="smk37-installer-start.js?v=0.9.22-r2"></script></body></html>
+</main><script src="smk37-installer-start.js?v=0.9.22-r4"></script></body></html>
