@@ -5,6 +5,7 @@
  * Transport hooks: smku_read(host offset), smku_flash_read/erase/prog, smku_poll.
  */
 #include "smk37_update_format.h"
+#include "smk37_public_profile.h"
 static uint8_t smku_header[SMKU_HEADER],smku_sector[4096],smku_current[4096];
 static uint32_t smku_flash_crc(uint32_t off,uint32_t n,int *ok){
     uint32_t crc=~0u;
@@ -19,10 +20,16 @@ static int smku_fetch(unsigned sector){
 static __attribute__((noinline)) int smku_session(void){
     if(smku_flash_id()!=0x856014u)return -14;
     for(unsigned k=0;k<SMKU_HEADER;k+=512)if(smku_read(k,smku_header+k,512))return -1;
-    if(!smku_header_ok(smku_header,SMK37_UNIT_HEAD_CRC,SMK37_UNIT_TRIM_CRC))return -2;
     int ok=1;
-    if(smku_flash_crc(0,0x4000,&ok)!=SMK37_UNIT_HEAD_CRC || !ok ||
-       smku_flash_crc(0xc1000,556,&ok)!=SMK37_UNIT_TRIM_CRC || !ok)return -3;
+    uint32_t head_crc=SMK37_UNIT_HEAD_CRC,trim_crc=SMK37_UNIT_TRIM_CRC;
+#if SMK37_PUBLIC_BUILD
+    head_crc=SMK37_PUBLIC_HEAD_CRC;
+    if(smku_flash_read(0xc1000,smku_current,556) || !smk37_trim_keys_valid(smku_current,556))return -3;
+    trim_crc=smku_crc(smku_current,556,~0u)^~0u;
+#endif
+    if(!smku_header_check(smku_header,head_crc,trim_crc,SMK37_PUBLIC_BUILD))return -2;
+    if(smku_flash_crc(0,0x4000,&ok)!=head_crc || !ok ||
+       smku_flash_crc(0xc1000,556,&ok)!=trim_crc || !ok)return -3;
     /* Validate the complete package before the first erase. Revalidate each
        sector on the second pass so changed host data cannot bypass preflight. */
     uint32_t crc=~0u;
@@ -41,6 +48,8 @@ static __attribute__((noinline)) int smku_session(void){
         smku_poll();
     }
     if(smku_flash_crc(SMKU_LO,SMKU_BYTES,&ok)!=smku_rd(smku_header+40) || !ok)return -12;
+    if(smku_flash_crc(0,0x4000,&ok)!=head_crc || !ok ||
+       smku_flash_crc(0xc1000,556,&ok)!=trim_crc || !ok)return -15;
     /* Final handshake is sent only after whole-application readback. */
     if(smku_read(0xf0000000u,smku_sector,8))return -13;
     return 0;

@@ -6,7 +6,7 @@
 <script src="locales.js"></script><script src="i18n.js"></script><script src="skin.js"></script>
 <script defer src="site-nav.js?v=smk-simulator"></script>
 <script defer src="analytics.js"></script>
-<script type="module" src="smk-version.js?v=0.9.21"></script>
+<script type="module" src="smk-version.js?v=0.9.22"></script>
 <link rel="stylesheet" href="smk37-landing.css">
 <script defer src="studio-preview.js"></script><script defer src="smk37-landing.js"></script><script defer src="panel-guide.js"></script>
 <style>
@@ -23,7 +23,7 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
 <section class="smk-hero installer-hero">
 <div><div class="smk-launch-label">CUSTOM FIRMWARE</div><h2>A little synth.<br>A bigger playground.</h2>
 <p class="smk-launch-copy"><strong>The first custom firmware for SMK-37 Pro &amp; Elite.</strong> A revolutionary new way to play, shape, and sequence.</p><p class="smk-launch-detail">Play right in your browser or connect your keyboard. Expressive sounds, four tracks, and a hands-on Studio that feels like hardware.</p>
-<div class="hero-actions"><div class="install-action"><a id="go" href="#install">Install Felucca SMK Beta</a><p id="release" class="small">Local beta · loading version…</p></div><a class="hero-link" data-studio-preview href="editor.html">Open Studio ↗</a><a class="hero-link" href="simulator.html">Open Simulator ↗</a></div>
+<div class="hero-actions"><div class="install-action"><a id="go" href="#install">Install Felucca SMK Beta</a><p id="release" class="small">Public beta · loading version…</p></div><a class="hero-link" data-studio-preview href="editor.html">Open Studio ↗</a><a class="hero-link" href="simulator.html">Open Simulator ↗</a></div>
 <p class="smk-beta small">This firmware is a beta.<br>Provided without warranty. Keep a backup of your sounds and settings.</p></div>
 <figure class="smk-instrument" data-current-finish="red"><svg viewBox="0 0 960 430" role="img" aria-labelledby="smk-hero-title smk-hero-desc" xmlns="http://www.w3.org/2000/svg">
 <title id="smk-hero-title">SMK-37 Pro Red</title><desc id="smk-hero-desc">37 piano keys, sixteen pads, eight encoders, four faders, pitch and modulation wheels, and a color display.</desc>
@@ -36,23 +36,28 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
   <h2>To install:</h2>
   <p>Connect your SMK directly to the computer by USB and power it on. Open this page in <strong>Chrome or Edge</strong>.</p>
   <p>Close Studio and other MIDI apps, confirm the version, then use the installer below. <strong>Do not unplug USB or switch off while writing.</strong></p>
-  <p class="small">General public firmware installation is being completed. Studio and Simulator are available without installing firmware. Local development previews can separately stage the existing device-specific test package.</p>
+  <p>Select the official <strong>SMK-37 Pro 016</strong> or <strong>SMK-37 Elite 016</strong> <code>.fwsc</code> file for your model. Your browser uses it to prepare Felucca SMK locally; the file is not uploaded. Unzip the official download first.</p>
   <details class="smk-install-help"><summary>First installation or coming from stock firmware?</summary><div class="install-paths">
-    <article><h3>Already running the SMK USB updater?</h3><p>Test11 and later updater-enabled builds can receive the next candidate directly over a normal USB cable. Connect the SMK directly to the computer, power it on, and use Chrome or Edge.</p></article>
-    <article><h3>Still on stock firmware or Test10?</h3><p>The stock-to-Felucca installation path is still in development. No general first-install package is published here yet.</p></article>
+    <article><h3>First installation</h3><p>Your keyboard must be running official firmware 016. Choose the file for the same Pro or Elite model, select First installation, then install over normal USB.</p></article>
+    <article><h3>Updating Felucca SMK</h3><p>Choose Update for public version 0.9.22 or later. Earlier private Test11–Test21 builds use a different updater and require a separate migration; this installer will stop before writing to them.</p></article>
   </div></details>
   <div class="status-box">
     <p id="status" role="status">Checking firmware availability...</p>
 
-    <label><input type="checkbox" id="ack"> I understand this is beta firmware and have backed up my sounds and settings.</label>
+    <div id="public-package-controls">
+      <label for="stock-file">Official firmware file for your model <input id="stock-file" type="file" accept=".fwsc"></label>
+      <label for="install-path">Installation type <select id="install-path"><option value="stock">First installation — official 016 firmware</option><option value="update">Update — Felucca SMK 0.9.22 or later</option></select></label>
+    </div>
+    <label><input type="checkbox" id="ack"> I understand this is beta firmware, have backed up my sounds and settings, and accept that a failed installation may require hardware recovery.</label>
     <button class="primary" id="install-button" disabled>Install SMK beta</button>
-    <p class="small">Keep USB and device power connected until installation completes. The update writes only the application area; project and preset storage, calibration, and the bootloader are outside that range. Do not disconnect or switch off the keyboard while programming.</p>
+    <p class="small">Keep USB and device power connected until installation completes. First installation uses your model’s official loader. The prepared package changes application content only. Later Felucca updates enforce application-only writes, excluding calibration, projects and presets.</p>
+    <p class="small">This public first-install path has passed software tests; installation on stock hardware still needs confirmation. Earlier development builds were tested on the Pro. Provided without warranty.</p>
     <details><summary>Installation log</summary><pre id="log" aria-live="polite"></pre></details>
   </div>
   <details class="beta-notes"><summary>Beta status and current limits</summary>
     <p><strong>Confirmed on the Pro test device:</strong> Test12 normal-USB installation, restart and saved-project retention, plus earlier control, sound, sustain and two-way editor checks.</p>
     <p><strong>Through Test21:</strong> Grouped navigation, settings, presets/favorites, FM6 editing, sound and pattern undo, sustained-note monitoring and rolling values are implemented. TRS notes, chords, sustain and pitch, plus a user-sample upload and playback, have been exercised on the Pro test device.</p>
-    <p>TRS output starts OFF after restart. Release keys and sustain before disabling it: a held receiver note can remain sounding. Sample persistence after restart and longer USB audio testing remain follow-ups. Bluetooth and complete web backups are not enabled. The next portable installer build remains in development.</p>
+    <p>TRS output starts OFF after restart. Release keys and sustain before disabling it: a held receiver note can remain sounding. Sample persistence after restart and longer USB audio testing remain follow-ups. Bluetooth and complete web backups are not enabled. The public beta installer supports official 016 firmware and public Felucca SMK 0.9.22 or later.</p>
   </details>
 </section>
 <section class="panel-guide" id="guide" data-panel-guide data-section="knobs" aria-labelledby="smk-guide-heading">
@@ -90,4 +95,4 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
 
 </div>
 <footer>Felucca SMK by Chance Roth (<a href="https://github.com/ChanceTheMaker" target="_blank" rel="noopener">@ChanceTheMaker</a>). Based on Felucca by Leo Kuroshita (@kurogedelic), H&uuml;gelton Instruments. GPL-3.0. M-VAVE, FM-1, and SMK-37 are trademarks of their respective owners.</footer>
-</main><script type="module" src="smk37-installer.js?v=0.9.21"></script></body></html>
+</main><script type="module" src="smk37-installer.js?v=0.9.22"></script></body></html>

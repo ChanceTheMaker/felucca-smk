@@ -7,6 +7,7 @@
  * FM-1 ADC/UART initialization and radio remain disabled. */
 #include <stdint.h>
 #include "smk37_unit.h"
+#include "smk37_public_profile.h"
 #include "smk37_version.h"
 #define FELUCCA_FLASH 0
 #ifndef SMK37_ENABLE_PRESETS
@@ -297,10 +298,13 @@ static int smk37_storage_program(uint32_t off,const void *src,uint32_t n)
 }
 #if SMK37_ENABLE_SAMPLES
 static const uint32_t smk37_sample_stock_crc[3]=SMK37_UNIT_SAMPLE_CRCS;
+#endif
+static uint32_t smk37_current_trim_crc=SMK37_UNIT_TRIM_CRC;
+#if SMK37_ENABLE_SAMPLES
 static const uint8_t *smk37_sample_xip(unsigned k){return smk37_samples_owned&&k<3?fm1_xip_ptr(smk37_sample_address(k)):smk37_empty_sample;}
 static void smk37_sample_invalidate(unsigned k){fm1_irq_off();fl_inval(smk37_sample_address(k),SMP_USER_SIZE);fm1_irq_on();}
 static void smk37_samples_probe(void){
-    int state=smk37_sample_owner_state(&smk37_storage_io,SMK37_UNIT_TRIM_CRC);
+    int state=smk37_sample_owner_state(&smk37_storage_io,smk37_current_trim_crc);
     smk37_samples_state=state<0?3:state;smk37_samples_owned=0;
     if(state!=2)return;
     /* SMK's application ends at 0x9d000; never use the FM-1's 0x93000
@@ -314,7 +318,19 @@ static void smk37_samples_probe(void){
 static int smk37_sample_format(void){
     if(!smk37_storage_writable||!smk37_up_idle())return -1;
     smk37_samples_formatting=1;
-    int rc=smk37_sample_initialize(&smk37_storage_io,SMK37_UNIT_TRIM_CRC,smk37_sample_stock_crc);
+    const uint32_t *expected=smk37_sample_stock_crc;
+#if SMK37_PUBLIC_BUILD
+    /* Explicit initialization replaces this instrument's old sample contents.
+     * Existing ownership still binds to this instrument's own trim CRC. */
+    uint32_t current[3];uint8_t block[256];
+    for(unsigned k=0;k<3;++k){uint32_t crc=~0u;
+        for(unsigned p=0;p<SMK37_SAMPLE_SIZE;p+=256){
+            if(smk37_storage_read(smk37_sample_address(k)+p,block,256)){smk37_samples_formatting=0;return -1;}
+            crc=smk37_profile_crc(block,256,crc);
+        }current[k]=~crc;
+    }expected=current;
+#endif
+    int rc=smk37_sample_initialize(&smk37_storage_io,smk37_current_trim_crc,expected);
     smk37_samples_formatting=0;
     if(!rc)smk37_samples_probe();
     return rc||!smk37_samples_owned?-1:0;
@@ -325,8 +341,19 @@ static int smk37_storage_probe(void)
     static uint8_t trim[556];
     fm1_irq_off();uint32_t id=FL_FAR(fl_jedec_ram)();fm1_irq_on();
     if(id!=0x856014u || smk37_flash_read_raw(0xc1000u,trim,sizeof trim))return -1;
-    /* Filled from the two identical private stock reads; never writes trim. */
+#if SMK37_PUBLIC_BUILD
+    if(!smk37_trim_keys_valid(trim,sizeof trim))return -1;
+    uint8_t block[256];uint32_t head_crc=~0u;
+    for(unsigned p=0;p<0x4000;p+=256){
+        if(smk37_flash_read_raw(p,block,256))return -1;
+        head_crc=smk37_profile_crc(block,256,head_crc);
+    }
+    if(~head_crc!=SMK37_PUBLIC_HEAD_CRC)return -1;
+    smk37_current_trim_crc=smk37_store_crc(trim,sizeof trim);
+#else
+    /* Legacy private builds retain their original unit-bound gate. */
     if(smk37_store_crc(trim,sizeof trim)!=SMK37_UNIT_TRIM_CRC)return -1;
+#endif
     if(!smk37_store_allocation_ok(&smk37_storage_io,sizeof smk37_session))return -1;
     smk37_storage_ready=1;smk37_storage_writable=SMK37_ENABLE_SAVES;
     if(SMK37_ENABLE_PRESETS)(void)smk37_up_boot();

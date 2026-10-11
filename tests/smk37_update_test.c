@@ -6,6 +6,13 @@
 #include "smk37_update_format.h"
 static uint8_t flash[0x100000],original[0x100000],package[SMKU_HEADER+SMKU_BYTES];
 static uint32_t headcrc,trimcrc;static unsigned erases,programs,reads,fetches;static int mode;
+#ifdef TEST_PUBLIC
+#define SMK37_PUBLIC_BUILD 1
+#include "smk37_public_profile.h"
+/* Synthetic model header for host tests only. Production keeps its pinned CRC. */
+#undef SMK37_PUBLIC_HEAD_CRC
+#define SMK37_PUBLIC_HEAD_CRC headcrc
+#endif
 #define SMK37_UNIT_HEAD_CRC headcrc
 #define SMK37_UNIT_TRIM_CRC trimcrc
 static int smku_read(uint32_t off,uint8_t*p,uint32_t n){
@@ -28,6 +35,13 @@ static void seal(void){put(44,0);put(44,smku_crc(package,SMKU_HEADER,~0u)^~0u);}
 static void setup(void){
     mode=0;erases=programs=reads=fetches=0;
     for(unsigned i=0;i<sizeof flash;++i)flash[i]=(uint8_t)(i*7+i/251);
+#ifdef TEST_PUBLIC
+    memcpy(flash+0xc1000+548,"trimdat",8);
+    for(unsigned k=0;k<37;++k)for(unsigned j=0;j<5;++j){
+        unsigned a=0xc1000+168+k*10+j*2,v=5+j*200;
+        flash[a]=v;flash[a+1]=v>>8;
+    }
+#endif
     memcpy(original,flash,sizeof flash);memset(package,0,SMKU_HEADER);
     memcpy(package,"SMK37-SALT-USB1",15);put(16,1);put(20,SMKU_LO);put(24,SMKU_HI);put(28,SMKU_BYTES);
     headcrc=smku_crc(flash,0x4000,~0u)^~0u;trimcrc=smku_crc(flash+0xc1000,556,~0u)^~0u;
@@ -62,5 +76,21 @@ int main(int argc,char **argv){
     setup();mode=4;assert(smku_session()<0 && !erases);
     setup();mode=5;assert(smku_session()<0 && erases==1);protected_ok();
     mode=0;fetches=0;assert(smku_session()==0);protected_ok();
+#ifdef TEST_PUBLIC
+    /* The same portable package accepts each instrument's valid calibration. */
+    for(unsigned unit=0;unit<3;++unit){
+        setup();put(16,2);put(36,0);seal();
+        flash[0xc1000+168]+=unit;
+        memcpy(original,flash,sizeof flash);
+        assert(smku_session()==0);protected_ok();
+    }
+    setup();put(16,2);put(36,0);seal();flash[0xc1000+548]=0;
+    assert(smku_session()<0&&!erases);
+    setup();put(16,2);put(36,0);seal();flash[100]^=1;
+    assert(smku_session()<0&&!erases);
+    setup();put(16,2);put(36,1);seal();assert(smku_session()<0&&!erases);
+#else
+    setup();put(16,2);put(36,0);seal();assert(smku_session()<0&&!erases);
+#endif
     puts("SMK USB updater: success, no-op, foreign/corrupt headers, full preflight, changed host data, failure/retry and protected ranges passed");
 }

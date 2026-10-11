@@ -1,5 +1,15 @@
 # Upstream integration status
 
+## October 11 public SMK beta 0.9.22
+
+Prepared the portable public application and Pro/Elite 016 browser installer.
+No upstream import: baseline remains Felucca 1.5.1. Unit-bound calibration
+fingerprints are replaced by model/layout and each instrument's own trim
+validation. See [release evidence](smk37/PUBLIC_0.9.22.md) for exact tests,
+retained limitations and the pending stock-hardware first-install check.
+Public beta publication is authorized; no connected hardware was flashed.
+No upstream contribution is included in this release.
+
 Last reviewed: **2026-10-10**. Update this record when importing or offering a
 feature; follow [UPSTREAM_WORKFLOW.md](UPSTREAM_WORKFLOW.md).
 

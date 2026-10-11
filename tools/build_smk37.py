@@ -23,6 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--stock-backups', nargs=2, type=Path)
     parser.add_argument('--stock-package', type=Path)
+    parser.add_argument('--public-release', action='store_true', help='Build portable model-gated firmware without owner backup fingerprints; no flashing')
     parser.add_argument('--enable-saves', action='store_true', help='private Test10 candidate; requires validated stock evidence and separate save-recovery kit')
     parser.add_argument('--enable-usb-update', action='store_true', help='private RAM-updater candidate; each built artifact requires validation')
     parser.add_argument('--usb-test-number',type=int,default=14,choices=range(11,100))
@@ -31,6 +32,12 @@ def main():
     parser.add_argument('--enable-samples', action='store_true', help='private sample storage candidate; explicit device initialization required')
     parser.add_argument('--enable-trs', action='store_true', help='stock-derived TRS MIDI OUT driver; remains OFF until enabled on device')
     args = parser.parse_args()
+    if args.public_release:
+        if args.stock_backups or args.stock_package:
+            parser.error('--public-release does not consume private backups or vendor packages')
+        if args.usb_test_number==14:args.usb_test_number=22
+        args.enable_saves=args.enable_presets=args.enable_usb_update=True
+        args.enable_usb_audio=args.enable_samples=args.enable_trs=True
     if args.enable_trs and not args.enable_usb_audio:
         parser.error('--enable-trs requires --enable-usb-audio (2 kHz service timer)')
     if args.enable_presets and not args.enable_saves:
@@ -41,7 +48,7 @@ def main():
         parser.error('--enable-usb-update requires --enable-saves')
     if bool(args.stock_backups) != bool(args.stock_package):
         parser.error('--stock-backups and --stock-package must be supplied together')
-    if args.enable_saves and not args.stock_backups:
+    if args.enable_saves and not args.stock_backups and not args.public_release:
         parser.error('--enable-saves requires validated stock backups and package')
     evidence = None
     if args.stock_backups:
@@ -50,7 +57,7 @@ def main():
                                       args.stock_package.read_bytes())
         except (OSError, ValueError) as exc:
             parser.error(str(exc))
-    if args.enable_presets:
+    if args.enable_presets and not args.public_release:
         for backup in args.stock_backups:
             raw=backup.read_bytes()
             for sector in (0xf3000,0xfe000):
@@ -61,19 +68,23 @@ def main():
     build.GEN = out / "gen"
     build.GEN.mkdir(parents=True, exist_ok=True)
     trim_crc = zlib.crc32(args.stock_backups[0].read_bytes()[0xc1000:0xc1000+556]) if evidence else 0
+    release_version = re.search(r'SMK37_RELEASE_VERSION "([0-9.]+)"',
+                                (build.FW/'hal/smk37_version.h').read_text())[1]
+    update_version = f'Felucca SMK {release_version} Beta' if args.public_release else f'SMK37 TEST{args.usb_test_number:02d} USB'
     sample_crcs=[0,0,0]
-    if args.enable_samples:
+    if args.enable_samples and not args.public_release:
         raw=args.stock_backups[0].read_bytes()
         if raw[0xbf000:0xc0000]!=bytes([255])*4096:
             parser.error('sample ownership journal is not blank in the validated stock backup')
         sample_crcs=[zlib.crc32(raw[a:a+0x14000]) for a in (0x9d000,0xc2000,0xd6000)]
     (build.GEN/'smk37_unit.h').write_text(
-        '/* Generated private backup evidence, no calibration values. */\n'
+        '/* Generated build policy; public builds contain no owner fingerprints. */\n'
+        f'#define SMK37_PUBLIC_BUILD {int(args.public_release)}\n'
         f'#define SMK37_UNIT_TRIM_CRC 0x{trim_crc:08x}u\n'
         '#define SMK37_UNIT_SAMPLE_CRCS {'+','.join(f'0x{c:08x}u' for c in sample_crcs)+'}\n'
-        f'#define SMK37_UNIT_HEAD_CRC 0x{zlib.crc32(args.stock_backups[0].read_bytes()[:0x4000]) if evidence else 0:08x}u\n'
+        f'#define SMK37_UNIT_HEAD_CRC 0x{0x3a04ad23 if args.public_release else zlib.crc32(args.stock_backups[0].read_bytes()[:0x4000]) if evidence else 0:08x}u\n'
         f'#define SMK37_UPDATE_PRODUCT "SMK-37_9{args.usb_test_number:02d}"\n'
-        f'#define SMK37_UPDATE_VERSION "SMK37 TEST{args.usb_test_number:02d} USB"\n')
+        f'#define SMK37_UPDATE_VERSION "{update_version}"\n')
     if args.enable_usb_update:
         from build_smk37_loader import build_loader
         build_loader(out, build.GEN, f"SMK-37_9{args.usb_test_number:02d}")
@@ -145,7 +156,8 @@ def main():
     name = "smk37-integration-NOT-FOR-INSTALL.bin"
     (out / name).write_bytes(image)
     manifest = {
-        "board": "SMK-37 Pro", "installable": False,
+        "board": "SMK-37 Pro & Elite" if args.public_release else "SMK-37 Pro", "installable": False,
+        "public_build": args.public_release,
         "purpose": "offline linked application integration",
         "image": name, "bytes": len(image), "sha256": hashlib.sha256(image).hexdigest(),
         "entry": hex(sym("_start")), "bss_end": hex(sym("_bss_end")),
@@ -163,7 +175,7 @@ def main():
         "trs_midi_output_default": "OFF",
         "trs_midi_output_hardware_validated": False,
         "usb_audio_rates": [44100, 48000] if args.enable_usb_audio else [],
-        "update_product": f"SMK-37_9{args.usb_test_number:02d}", "update_version": f"SMK37 TEST{args.usb_test_number:02d} USB",
+        "update_product": f"SMK-37_9{args.usb_test_number:02d}", "update_version": update_version,
         "upstream_revision": "a4d7ca2e5d52a4c35e2468401f00d883cadbda03",
         "upstream_version": "1.5.1",
         "prior_unit_evidence": "Test12: owner-confirmed USB update/restart and saved-project retention; earlier tests cover controls, sound, sustain and editor. This new artifact is not device-validated.",

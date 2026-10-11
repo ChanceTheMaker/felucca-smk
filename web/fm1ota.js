@@ -109,9 +109,10 @@ async function handshake(link, tries = 3) {
 }
 
 export class Updater {
-  constructor(access, log) {
+  constructor(access, log, portPattern = /fm-1|felucca|ota|composite|sinco|usb-midi/i) {
     this.access = access;
     this.log = log || (() => {});
+    this.portPattern = portPattern;
   }
 
   // every in/out pair with the same port name that answers the handshake
@@ -119,7 +120,7 @@ export class Updater {
     const outs = [...this.access.outputs.values()];
     for (const input of this.access.inputs.values()) {
       if (input.state === "disconnected") continue;
-      if (!/fm-1|felucca|ota|composite|sinco|usb-midi/i.test(input.name || "")) continue;   // never probe other gear
+      if (!this.portPattern.test(input.name || "")) continue;
       const output = outs.find((o) => o.name === input.name && o.state !== "disconnected");
       if (!output) continue;
       try { await input.open(); await output.open(); } catch (_) { continue; }
