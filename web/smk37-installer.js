@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import {parsePackage,installSmk,installStockSmk} from './smk37-update.js';
-import {buildSmkPublicPackage} from './smk37-package.js';
+import {parsePackage,installSmk,installStockSmk} from './smk37-update.js?v=0.9.22-r2';
+import {buildSmkPublicPackage} from './smk37-package.js?v=0.9.22-r2';
 const status=document.getElementById('status'),button=document.getElementById('install-button'),ack=document.getElementById('ack'),output=document.getElementById('log');
 const file=document.getElementById('stock-file'),path=document.getElementById('install-path');
 const privatePreview=['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).has('private');
@@ -9,7 +9,7 @@ const sync=()=>{button.disabled=busy||!pkg||!ack.checked||!navigator.requestMIDI
 const log=message=>{status.textContent=message;output.textContent+=message+'\n';};
 ack.addEventListener('change',sync);
 window.addEventListener('beforeunload',event=>{if(busy){event.preventDefault();event.returnValue='';}});
-async function fetchBytes(url){const r=await fetch(new URL(url,import.meta.url),{cache:'no-store'});if(!r.ok)throw Error('Firmware download is unavailable. Reload this page and try again.');return new Uint8Array(await r.arrayBuffer());}
+async function fetchBytes(url){const r=await fetch(new URL(url,import.meta.url),{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Firmware download is unavailable. Reload this page and try again.');return new Uint8Array(await r.arrayBuffer());}
 try{
   if(privatePreview){
     release=JSON.parse(new TextDecoder().decode(await fetchBytes('./smk37-candidate.json')));
