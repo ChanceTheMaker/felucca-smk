@@ -36,13 +36,13 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
   <h2>To install:</h2>
   <p>Connect your SMK directly to the computer by USB and power it on. Open this page in <strong>Chrome or Edge</strong>.</p>
   <p>Close Studio and other MIDI apps, confirm the version, then use the installer below. <strong>Do not unplug USB or switch off while writing.</strong></p>
-  <p class="small">This local installer serves a private Pro test package matched to the backed-up test device and its calibration. It is not a general download for other units.</p>
+  <p class="small">General public firmware installation is being completed. Studio and Simulator are available without installing firmware. Local development previews can separately stage the existing device-specific test package.</p>
   <details class="smk-install-help"><summary>First installation or coming from stock firmware?</summary><div class="install-paths">
     <article><h3>Already running the SMK USB updater?</h3><p>Test11 and later updater-enabled builds can receive the next candidate directly over a normal USB cable. Connect the SMK directly to the computer, power it on, and use Chrome or Edge.</p></article>
-    <article><h3>Still on stock firmware or Test10?</h3><p>First installation and updates must use the package intended for your SMK model. The installer checks compatibility before programming.</p></article>
+    <article><h3>Still on stock firmware or Test10?</h3><p>The stock-to-Felucca installation path is still in development. No general first-install package is published here yet.</p></article>
   </div></details>
   <div class="status-box">
-    <p id="status" role="status">Loading local candidate information...</p>
+    <p id="status" role="status">Checking firmware availability...</p>
 
     <label><input type="checkbox" id="ack"> I understand this is beta firmware and have backed up my sounds and settings.</label>
     <button class="primary" id="install-button" disabled>Install SMK beta</button>
@@ -51,8 +51,8 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
   </div>
   <details class="beta-notes"><summary>Beta status and current limits</summary>
     <p><strong>Confirmed on the Pro test device:</strong> Test12 normal-USB installation, restart and saved-project retention, plus earlier control, sound, sustain and two-way editor checks.</p>
-    <p><strong>Test18 candidate:</strong> Test17's display was reviewed on the test device. Test18 adds navigation and settings, presets and favorites, FM6 operator editing, sound undo, a MIDI monitor and rolling value animation. Build and host checks pass; this exact candidate still needs its device check.</p>
-    <p>Bluetooth, TRS MIDI, sample uploads and complete web backups are not enabled in this SMK build. Sound and pattern undo each keep one step of undo/redo. Manual slice-marker edits await user-sample storage; built-in slice sources are read-only, as on FM-1. This firmware remains a beta and is provided without warranty; keep your backups.</p>
+    <p><strong>Through Test21:</strong> Grouped navigation, settings, presets/favorites, FM6 editing, sound and pattern undo, sustained-note monitoring and rolling values are implemented. TRS notes, chords, sustain and pitch, plus a user-sample upload and playback, have been exercised on the Pro test device.</p>
+    <p>TRS output starts OFF after restart. Release keys and sustain before disabling it: a held receiver note can remain sounding. Sample persistence after restart and longer USB audio testing remain follow-ups. Bluetooth and complete web backups are not enabled. The next portable installer build remains in development.</p>
   </details>
 </section>
 <section class="panel-guide" id="guide" data-panel-guide data-section="knobs" aria-labelledby="smk-guide-heading">

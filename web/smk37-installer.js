@@ -2,11 +2,13 @@
 import {parsePackage,installSmk} from './smk37-update.js';
 import {SMK_VERSION} from './smk-version.js?v=0.9.21';
 const status=document.getElementById('status'),button=document.getElementById('install-button'),ack=document.getElementById('ack'),output=document.getElementById('log');
+const localPreview=['localhost','127.0.0.1','[::1]'].includes(location.hostname);
 let candidate,busy=false;
 const sync=()=>{button.disabled=busy||!candidate||!ack.checked||!navigator.requestMIDIAccess;};
 const log=message=>{status.textContent=message;output.textContent+=message+'\n';};
 ack.addEventListener('change',sync);
 try{
+ if(!localPreview)throw Error('Public firmware installation is being prepared. You can use Studio and Simulator now without installing firmware.');
  const r=await fetch(new URL('./smk37-candidate.json',import.meta.url),{cache:'no-store'});
  if(!r.ok)throw Error('No candidate package is staged. Studio remains available.');
  candidate=await r.json();
@@ -14,8 +16,13 @@ try{
  const release=document.getElementById('release');
  if(release)release.textContent=`${SMK_VERSION} · Package: ${candidate.version}`;
  log(`${candidate.version} - ${candidate.usb_hardware_validated ? 'USB installation, restart and saved-project retention confirmed on the test device.' : 'private USB updater candidate; hardware validation pending.'}`);
-}catch(e){candidate=null;log(e.message);const release=document.getElementById('release');if(release)release.textContent=`${SMK_VERSION} · No firmware staged`;}
-if(!navigator.requestMIDIAccess)log('Web MIDI is unavailable here. Open this local page in Chrome or Edge.');
+}catch(e){candidate=null;log(e.message);const release=document.getElementById('release');if(release)release.textContent=`${SMK_VERSION} · ${localPreview?'No firmware staged':'Public firmware coming soon'}`;}
+if(!localPreview){
+ document.getElementById('go').textContent='Firmware beta status';
+ button.textContent='Public firmware coming soon';
+ ack.parentElement.hidden=true;
+}
+if(localPreview&&!navigator.requestMIDIAccess)log('Web MIDI is unavailable here. Open this local page in Chrome or Edge.');
 sync();
 button.addEventListener('click',async()=>{
  if(button.disabled)return;busy=true;sync();
