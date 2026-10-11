@@ -4,7 +4,7 @@ import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {buildSmkPublicPackage,smkLogicalImage} from './smk37-package.js';
 import {parsePackage,installStockSmk,installSmk,LO,HI} from './smk37-update.js';
-import {Updater} from './fm1ota.js';
+import {Updater} from './fm1ota.js?v=0.9.22-r2';
 import {sha256hex} from './fm1pkg.js';
 
 // No MIDI hardware is opened. Exercise transport decisions with simulated links.
