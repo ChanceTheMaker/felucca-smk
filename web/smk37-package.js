@@ -79,3 +79,27 @@ export async function buildSmkPublicPackage(stock,app,release){
   h.setUint32(44,crc32(bytes.subarray(0,HEADER)),true);
   return {bytes,sha:await sha256hex(bytes),product:release.product,version:release.version,format:2,factory,image,factoryProduct,stockModel:profile.model};
 }
+
+
+// A separate package for stage-1 diagnostics: no application/flash payload.
+const handoffPackages=new WeakSet();
+const OFFICIAL_OTA_SHA='ef1f2db89b011fa53e71df363f0122de0ea896618c53fb53e8da676322004541';
+export const isStockHandoffPackage=pkg=>handoffPackages.has(pkg);
+export async function buildStockHandoffPackage(stock){
+  const stockSha=await sha256hex(stock),profile=profiles[stockSha];
+  if(!profile)throw Error('Choose the unmodified official SMK-37 Pro 016 or Elite 016 .fwsc file.');
+  const pkg=new SMKPackage(stock);
+  const loaders=pkg.entries.filter(e=>e.type===100&&e.name==='ota.bin');
+  if(loaders.length!==1||loaders[0].size!==19969||pkg.flashFileOff!==1024)throw Error('Unexpected official loader layout.');
+  const ota=loaders[0],logical=smkLogicalImage(stock).raw;
+  const loaderSha=await sha256hex(logical.subarray(ota.dataOff,ota.dataOff+ota.size));
+  if(loaderSha!==OFFICIAL_OTA_SHA)throw Error('Official RAM loader checksum mismatch.');
+  // Only the directory/header and exact ota.bin bytes are available to serve.
+  // A request for any flash.bin/config payload is rejected by serveLoaderOnly.
+  const ranges=[[0,pkg.flashFileOff],[ota.dataOff,ota.dataOff+ota.size]];
+  const image=new Uint8Array(logical.length);
+  for(const [lo,hi] of ranges)image.set(logical.subarray(lo,hi),lo);
+  const result={stockModel:profile.model,stockSha,loaderSha,image,ranges};
+  handoffPackages.add(result);
+  return result;
+}

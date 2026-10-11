@@ -3,18 +3,29 @@
 <title>Felucca SMK — MIDI connection check</title>
 <style>
 body{max-width:900px;margin:40px auto;padding:0 20px;background:#18191d;color:#f4f4f4;font:16px/1.5 system-ui}
-a{color:#ffd18a}button,select{font:inherit;padding:8px 12px;margin:5px 4px 5px 0}button:disabled{opacity:.5}
-pre{background:#08090b;padding:16px;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #555;max-height:50vh;overflow:auto}
+a{color:#ffd18a}button,select,input{font:inherit}button,select{padding:8px 12px;margin:5px 4px 5px 0}button:disabled{opacity:.5}button:not(:disabled){cursor:pointer}
+section{border:1px solid #555;border-radius:12px;padding:20px;margin:24px 0;background:#22242a}h2{margin-top:0}label{display:inline-block}input[type=file]{max-width:100%}.ack{display:block;margin:18px 0}.muted{color:#c2c5ce}#handoff-start{background:#ffd18a;color:#18191d;border:1px solid #ffd18a;border-radius:5px}#status{padding:12px;border-left:3px solid #ffd18a}
+pre{background:#08090b;padding:16px;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #555;max-height:50vh;overflow:auto}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #7bd9ff;outline-offset:3px}
 </style></head><body>
 <a href="./">← Felucca SMK</a><h1>MIDI connection check</h1>
-<p>This check only asks for the device identity. It does not enter update mode, upload a loader, or write firmware.</p>
-<p>Close Studio, the installer, and other MIDI apps before checking. Disconnect unrelated MIDI devices.
-If checking a failed loader handoff, leave the SMK in its current state and run this check before power-cycling it.</p>
+<p>Close Studio, the installer, and other MIDI apps. Disconnect unrelated MIDI devices. Use Chrome or Edge and allow MIDI/SysEx access when prompted.</p>
 <button id="enable">Enable MIDI access</button>
 <label for="output">MIDI output</label> <select id="output" disabled><option>No MIDI access</option></select>
-<button id="probe" disabled>Check identity</button><button id="save" disabled>Save diagnostic log</button>
-<p id="status" role="status">Use Chrome or Edge. Allow MIDI/SysEx access when prompted.</p>
-<p>The log stays in this page until you save or share it. It records device names and identity replies, not your playing.</p>
-<pre id="log" aria-live="polite"></pre>
-<script type="module" src="midi-diagnostics-page.js"></script>
+<section aria-labelledby="identity-title"><h2 id="identity-title">1. Check identity</h2>
+<p>This check only asks for the device identity. It does not enter update mode, upload a loader, or write firmware.</p>
+<p>If an installation has already stopped at the loader handoff, leave the SMK in that state and run this check before power-cycling it.</p>
+<button id="probe" disabled>Check identity</button></section>
+<section id="handoff" aria-labelledby="handoff-title"><h2 id="handoff-title">2. Test stock loader handoff</h2>
+<p>For stock <strong>SMK-37 Pro 016 or Elite 016</strong> only. Start with the normal factory screen and select its <strong>-Private</strong> MIDI output above. This test loads the verified official RAM updater and records its MIDI ports and identity for 30 seconds.</p>
+<p><strong>This changes the device into loader mode; its screen may go black.</strong> The diagnostic does not send the application firmware or start the flash-writing stage. Keep USB and power connected until the test ends. Then save the log and power-cycle the SMK to return to stock firmware.</p>
+<label for="model">Stock model</label> <select id="model"><option>SMK-37 Elite</option><option>SMK-37 Pro</option></select>
+<details><summary>Use an official firmware file from your computer (optional)</summary><p>The test normally downloads the official 016 file from a pinned mirror and verifies its SHA-256. If that download fails, select your original, unmodified .fwsc file here.</p><input id="stock-file" type="file" accept=".fwsc" aria-label="Official stock 016 firmware file"></details>
+<label class="ack"><input id="ack" type="checkbox"> I understand this enters the official RAM loader for diagnostics and requires a power-cycle afterward.</label>
+<button id="handoff-start" disabled>Test loader handoff</button><button id="stop" disabled>Stop diagnostic</button>
+<p class="muted">The existing installer’s model checks remain unchanged. An unexpected loader identity is recorded for investigation, not accepted for flashing.</p></section>
+<p id="status" role="status">Enable MIDI access to begin. Nothing starts automatically.</p>
+<button id="save" disabled>Save diagnostic log</button>
+<p class="muted">The log stays on this page until you save or share it. It includes browser information, port names and IDs, identity replies, and loader request addresses—not your playing. “Closed” means this page released a MIDI port; it does not mean USB disconnected.</p>
+<pre id="log" aria-label="Diagnostic log"></pre>
+<script type="module" src="midi-diagnostics-page.js?v=elite-handoff2"></script>
 </body></html>

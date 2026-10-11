@@ -1,3 +1,31 @@
+## Elite loader handoff capture v2 — 2026-10-11
+
+Contributor stock diagnostic evidence confirms matching Elite -Private input/output
+names and a SMK-37 Elite_016 reply within about 2 ms on macOS. It does not capture
+the RAM loader. Stock pairing works in that log; the loader failure remains undiagnosed.
+
+The existing MIDI connection-check page now has a separate, explicit stock-loader
+test. It verifies an allowlisted official Pro/Elite 016 file and its ota.bin hash,
+requires the matching stock identity, and stages only the official header and
+RAM-loader ranges. The diagnostic image contains no application/configuration
+payload. It refuses out-of-range reads and never sends the second START that
+begins flash programming. Normal installer model/pairing gates are unchanged.
+
+After the stage-1 completion it observes all MIDI inputs and sends identity
+queries to SMK outputs and newly appearing outputs, independently of port names.
+Pre-existing unrelated outputs such as IAC are excluded. Logs include port IDs,
+names, states, identity packets and request addresses, stay in the browser, and
+are saved manually. The UI explains loader mode, a possible black screen, and
+power-cycling after capture. No automatic operation occurs on page load.
+
+Validation: host tests cover stage-1 bounds, invalid requests, one START only,
+abort, timeout, disconnect, changed IDs/names, identity-only capture, and cleanup.
+Both pinned official files pass optional full mocked handoffs and SHA-256 checks;
+non-loader bytes in diagnostic packages are zero. Existing identity/update/public
+installer tests pass. No hardware was opened, queried or flashed for this change.
+Actual Elite/macOS handoff testing remains the purpose of the published tool.
+Published firmware 0.9.22 and its hashes are unchanged; this is a website-only PR.
+
 ## Elite stock-loader handoff investigation ? 2026-10-11
 
 Issue ChanceTheMaker/felucca-smk#4 reports stage-1 completion followed by an
