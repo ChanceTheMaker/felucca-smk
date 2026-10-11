@@ -108,6 +108,11 @@ A docked keyboard can collapse to a tray and supports mouse/touch glissando.
 Browser mode uses browser storage rather than the connected keyboard's flash.
 Export sessions to keep a separate copy; clearing browser data can remove local saves.
 
+Both Browser Studio and Simulator accept external USB MIDI controllers. Click
+**Enable USB MIDI input**, allow access, then select your keyboard. Notes, velocity,
+sustain, pitch bend and modulation feed the browser synth; no MIDI output port
+is opened. Switching away or unplugging releases controller-owned notes.
+
 The Simulator includes 37 piano keys, pads, knobs, faders, pitch/mod wheels,
 buttons and lighting. It offers finish swatches, compact/expanded views,
 fullscreen and a dismissible tutorial that can be replayed from the question-mark

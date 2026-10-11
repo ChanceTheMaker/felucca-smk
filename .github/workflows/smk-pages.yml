@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node web/test_analytics.mjs && node web/audio/test_smk_engine.mjs && node web/audio/test_smk_worklet.mjs
+      - run: node web/test_analytics.mjs && node web/test_midi_input.mjs && node web/audio/test_smk_engine.mjs && node web/audio/test_smk_worklet.mjs
       - run: python3 tools/make_smk_site.py build/smk-site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

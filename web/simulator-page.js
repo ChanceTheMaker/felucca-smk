@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {SMKBrowserSynth} from './audio/smk-browser.js?startup=2';
+import {mountMIDIInput} from './midi-input.js';
 import {createSMKSimulator} from './smk-simulator.js';
 const $=id=>document.getElementById(id),synth=new SMKBrowserSynth();
 let panel=null,running=false,busy=false,starting=null;
@@ -54,4 +55,5 @@ document.addEventListener('click',async e=>{
   try{panel.release();await synth.save();await synth.stop();location.assign(url.href);}catch(error){$('audio-status').textContent='Could not save before leaving: '+error.message;busy=false;controls();}
 });
 window.addEventListener('pagehide',()=>{panel?.release();});
+mountMIDIInput({container:$('browser-session'),getSynth:()=>synth,active:()=>running,enableAudio:async()=>{await startAudio();await synth.context?.resume();running=synth.context?.state==='running';controls();}});
 startAudio();

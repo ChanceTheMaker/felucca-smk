@@ -1,0 +1,14 @@
+﻿import assert from 'node:assert/strict';
+import {MIDIInput} from './midi-input.js';
+const sent=[];let enabled=true,requests=0,refresh;
+const handlers=new Map();const port={id:'usb',name:'USB keys',state:'connected',addEventListener:(n,f)=>handlers.set(n,f),removeEventListener:n=>handlers.delete(n)};
+const access={inputs:new Map([['usb',port]]),addEventListener:(n,f)=>{refresh=f;},removeEventListener(){}};
+const midi=new MIDIInput({send:b=>sent.push(b),enabled:()=>enabled,requestAccess:async()=>{requests++;return access;}});
+await midi.connect();await midi.connect();assert.equal(requests,1);midi.select('usb');
+for(const b of [[0x92,60,85],[0xb2,64,127],[0xe2,127,100],[0xb2,1,91],[0x82,60,0]])handlers.get('midimessage')({data:new Uint8Array(b)});
+assert.deepEqual(sent,[[0x92,60,85],[0xb2,64,127],[0xe2,127,100],[0xb2,1,91],[0x82,60,0]]);
+let n=sent.length;for(const b of [[0xf0,1,0xf7],[0x90,60],[0x90,128,90],[0x90,60,90,0],[60,0]])midi.message(b);assert.equal(sent.length,n);
+enabled=false;midi.message([0x90,61,80]);assert.equal(sent.length,n);enabled=true;
+midi.message([0x91,62,77]);port.state='disconnected';refresh();assert.equal(midi.port,null);assert(sent.some(b=>b.join()==='129,62,0'));assert(sent.some(b=>b.join()==='178,64,0'));assert(sent.some(b=>b.join()==='226,0,64'));
+assert.equal(handlers.size,0);midi.dispose();
+console.log('PASS: USB MIDI notes, sustain, bend, mod, channel retention, malformed/SysEx rejection, inactive-mode isolation and unplug cleanup.');
