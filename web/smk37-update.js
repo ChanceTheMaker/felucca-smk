@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import {Updater} from './fm1ota.js?v=0.9.22-r4';
+import {Updater} from './fm1ota.js?v=elite-diag1';
 export const HEADER=1024, LO=0x4000, HI=0x9d000;
 export function crc32(data){let c=0xffffffff;for(const b of data){c^=b;for(let i=0;i<8;i++)c=(c>>>1)^((0-(c&1))&0xedb88320);}return (c^0xffffffff)>>>0;}
 export async function parsePackage(bytes,expectedSha){
@@ -63,6 +63,7 @@ export async function installStockSmk(access,pkg,log=()=>{}){
     const first=await up.serve(link,pkg.image,0xe0000000,15000,n=>{if(n%64===0)log(`Preparing loader: ${n}`);});
     if(!first.finished)throw Error('The stock firmware did not complete loader preparation. Stop and inspect the device before retrying.');
     link.close();link=null;
+    log(`Waiting for official loader identity ${JSON.stringify('ota-'+pkg.stockModel)}. Port and identity observations follow.`);
     const ota=await up.waitFor(id=>id.model==='ota-'+pkg.stockModel,30000);
     if(!ota)throw Error('The official SMK loader did not appear. Stop and inspect the device.');
     link=ota.link;
