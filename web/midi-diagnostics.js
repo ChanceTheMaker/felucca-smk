@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Read-only identity probe. Deliberately has no START, update, or flash commands.
 import {unpack7} from './fm1ota.js';
-const QUERY = Object.freeze([0xf0,0x00,0x32,0x45,0x00,0x00,0x00,0x40,0x7f,0xf7]);
+export const QUERY = Object.freeze([0xf0,0x00,0x32,0x45,0x00,0x00,0x00,0x40,0x7f,0xf7]);
 export function midiInventory(access) {
   return [...access.inputs.values(), ...access.outputs.values()].map(p => ({
-    type:p.type, name:p.name ?? '', manufacturer:p.manufacturer ?? '',
+    id:p.id, type:p.type, name:p.name ?? '', manufacturer:p.manufacturer ?? '',
     state:p.state, connection:p.connection
   }));
 }
@@ -32,7 +32,7 @@ export async function probeMidiIdentity(access, outputId, {log=()=>{}, timeoutMs
       const receive=event=>{
         const evidence=identityEvidence(event.data);
         if (!evidence) return; // Never collect notes, controllers, or unrelated SysEx.
-        const reply={input:input.name ?? '', output:output.name ?? '', ...evidence};
+        const reply={inputId:input.id, outputId:output.id, input:input.name ?? '', output:output.name ?? '', ...evidence};
         replies.push(reply); log(`Identity reply: ${JSON.stringify(reply)}`);
       };
       input.addEventListener('midimessage',receive);

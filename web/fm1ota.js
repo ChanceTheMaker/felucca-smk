@@ -36,7 +36,7 @@ export function unpack7(s) {
   return out;
 }
 
-function response(addr, data, fl = 0) {
+export function response(addr, data, fl = 0) {
   const len = data.length;
   const body = [0x00, 0x59, 0x30, (len + 8) & 0xFF, ((len + 8) >> 8) & 0xFF, 0, fl,
     addr & 0xFF, (addr >>> 8) & 0xFF, (addr >>> 16) & 0xFF, (addr >>> 24) & 0xFF,
@@ -47,7 +47,7 @@ function response(addr, data, fl = 0) {
   return [0xF0, ...pack7(body), 0xF7];
 }
 
-function parseRequest(pkt) {
+export function parseRequest(pkt) {
   if (pkt[0] !== 0xF0 || pkt[pkt.length - 1] !== 0xF7) return null;
   const u = unpack7(pkt.slice(1, -1));
   if (u.length !== 15 || u[0] !== 0 || u[1] !== 0x59 || u[2] !== 0x30) return null;
