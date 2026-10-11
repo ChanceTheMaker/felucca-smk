@@ -8,8 +8,10 @@ Bluetooth remains excluded. No hardware was flashed during release preparation.
 ## Installation and packaging
 
 The website publishes the GPL application and its SHA-256 manifest. Owners
-select their original Pro 016 or Elite 016 `.fwsc` file; packaging runs locally
-in the browser. Vendor firmware, private backups and calibration are not hosted.
+choose Pro or Elite; the browser downloads the corresponding official 016 file
+from an immutable third-party mirror and checks its full SHA-256. An optional
+local file selector remains available. Packaging runs locally in the browser.
+Vendor firmware, private backups and calibration are not hosted by this site.
 
 Both official files are pinned by SHA-256. Pro has 36 wrapper marker blocks;
 Elite has 20. The Pro markers overlap the start of flash.bin, so package parsing
@@ -74,3 +76,25 @@ build/public-tests/public build/public-tests/elite-synthetic-flash.bin build/pub
 
 The raw application `.bin` is not a complete device image and must not be
 flashed directly. Use the installer to combine it with the correct official file.
+
+## Installer readiness follow-up
+
+- Automatic package preparation removes the mandatory official-file selection.
+- Versioned r4 module URLs keep cached dependencies consistent.
+- A private format-1 migration wraps the exact published 0.9.22 application for
+  the existing Test21 updater. The loopback preview selects staged migration
+  metadata automatically; the package and original device image are not published.
+- The migration passed the actual C private-loader host test against the saved
+  Test21 image: 102 changed sectors, protected regions and saved tail preserved.
+- The localhost browser loaded the migration and displayed its ready status.
+  This is packaging/host validation, not a claim of a completed hardware install.
+
+The owner completed the local migration successfully: application readback was
+verified and the normal USB identity returned as `SMK-37_922`. This validates
+the existing Pro development unit upgrade, not the separate stock first-install
+path. Use `/?public=1` on localhost to preview public packaging while a private
+migration is staged.
+
+Chrome public-preview checks passed for both Pro and Elite: selecting the model
+automatically downloaded and validated its package and reached ready status,
+without selecting a file or opening MIDI. Node transport regression tests passed.

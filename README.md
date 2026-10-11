@@ -199,19 +199,24 @@ installation path. The software is supplied without warranty; see [LICENSE](LICE
 
 The public installer prepares the firmware in your browser from your model's
 unmodified official **Pro 016** or **Elite 016** `.fwsc` file and the published
-Felucca application. The official file is not uploaded or redistributed.
+Felucca application. It downloads the required official file automatically from
+a pinned third-party mirror and verifies its SHA-256; nothing is uploaded.
+An optional file selector is available if that download is unavailable.
 
 1. Back up sounds/settings and confirm your keyboard is running official 016.
 2. Open the [installer](https://chancethemaker.github.io/felucca-smk/) in Chrome
    or Edge. Close Studio and other MIDI apps.
-3. Select the official `.fwsc` file for your exact model (unzip it first).
+3. Choose your Pro or Elite model and wait for the package to say ready.
 4. Choose **First installation**, acknowledge the beta notice, then Install.
 5. Keep USB and power connected until the normal device identity returns.
 
 For subsequent public releases choose **Update**, starting from 0.9.22 or later.
 Earlier private Test11–Test21 builds use a unit-bound updater and are refused
 before entering update mode. Their local preview remains at `/?private=1` when
-an explicit private candidate is staged; they need a separate migration.
+an explicit private candidate is staged; they need a separate migration. A reviewed
+Test21-to-0.9.22 migration can be staged with `tools/serve_smk37.py --candidate`;
+its `migration: true` metadata automatically selects that package on localhost,
+without a stock file or a return to stock. Private packages remain local.
 
 The first-install flow uses the official model-specific package and vendor
 loader. Packaging changes only app bytes/checksums and keeps other payloads
