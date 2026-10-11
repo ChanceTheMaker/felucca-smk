@@ -113,20 +113,36 @@ export class Updater {
     this.access = access;
     this.log = log || (() => {});
     this.portPattern = portPattern;
+    this.reported = new Set();
+    this.lastPorts = "";
+  }
+
+  diagnostic(message) {
+    if (!this.reported.has(message)) { this.reported.add(message); this.log(message); }
   }
 
   // every in/out pair with the same port name that answers the handshake
   async find(filter) {
     const outs = [...this.access.outputs.values()];
+    const ports = JSON.stringify([...this.access.inputs.values(), ...outs].map(p => ({
+      type:p.type, name:p.name ?? "", manufacturer:p.manufacturer ?? "", state:p.state
+    })));
+    if (ports !== this.lastPorts) { this.lastPorts = ports; this.log(`MIDI ports: ${ports}`); }
     for (const input of this.access.inputs.values()) {
       if (input.state === "disconnected") continue;
-      if (!this.portPattern.test(input.name || "")) continue;
+      if (!this.portPattern.test(input.name || "")) {
+        this.diagnostic(`Input skipped by updater name filter: ${JSON.stringify(input.name)}`); continue;
+      }
       const output = outs.find((o) => o.name === input.name && o.state !== "disconnected");
-      if (!output) continue;
-      try { await input.open(); await output.open(); } catch (_) { continue; }
+      if (!output) { this.diagnostic(`No same-name output for input: ${JSON.stringify(input.name)}`); continue; }
+      try { await input.open(); await output.open(); }
+      catch (e) { this.diagnostic(`Could not open MIDI pair ${JSON.stringify(input.name)}: ${e.message}`); continue; }
       const link = new Link(input, output);
       const id = await handshake(link, 2);
-      if (id && (!filter || filter(id))) return { link, id, name: input.name };
+      const accepted = id && (!filter || filter(id));
+      this.diagnostic(id ? `Identity on ${JSON.stringify(input.name)}: ${JSON.stringify(id.text)} (${accepted ? "accepted" : "not the expected identity"})`
+        : `No recognized identity reply on ${JSON.stringify(input.name)}`);
+      if (accepted) return { link, id, name: input.name };
       link.close();
     }
     return null;

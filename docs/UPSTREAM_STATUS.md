@@ -1,3 +1,32 @@
+## Elite stock-loader handoff investigation ? 2026-10-11
+
+Issue ChanceTheMaker/felucca-smk#4 reports stage-1 completion followed by an
+undetected official Elite 016 loader on macOS/Chrome; owner reports return to
+stock after power-cycle. Alternate identity and unequal MIDI port names are
+hypotheses, not observed root causes. Do not loosen the installer's model gate.
+
+Both allowlisted official Pro/Elite 016 files contain the same 19,969-byte
+`ota.bin`: SHA-256 `ef1f2db89b011fa53e71df363f0122de0ea896618c53fb53e8da676322004541`.
+Plaintext inspection did not establish its runtime identity.
+
+Branch `diag/elite-loader-handoff` adds local read-only MIDI diagnostics and
+installer logging of port inventories, unavailable pairs, open failures and
+accepted/rejected identities. Diagnostics sends only HS_QUERY to the selected
+output and observes identity replies on all inputs, independent of name pairing.
+It cannot stage a loader, start an update or write flash. Logs stay local until
+manually saved/shared. Existing updater pairing/model filters remain unchanged.
+No firmware changes or device operations. Host diagnostics/public updater tests
+pass. The owner tested the diagnostic on Windows Chrome: matching Felucca ports,
+SMK-37_931 identity within 5 ms, both ports closed afterward. Actual Elite/macOS
+loader evidence is still needed. Diagnostic website publication authorized; no
+issue reply sent. Published firmware and updater acceptance gates unchanged.
+
+Next evidence: after the reported handoff failure, close the installer without
+power-cycling, open MIDI connection check in Chrome, enable SysEx access, select
+the loader/SMK output and check identity. Save the log. If no MIDI ports appear,
+record that result and the USB device description from macOS System Information.
+A Windows/current-firmware probe checks the tool but cannot validate Elite OTA.
+
 # Upstream integration status
 
 ## October 11 public SMK beta 0.9.22

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Felucca SMK — MIDI connection check</title>
+<style>
+body{max-width:900px;margin:40px auto;padding:0 20px;background:#18191d;color:#f4f4f4;font:16px/1.5 system-ui}
+a{color:#ffd18a}button,select{font:inherit;padding:8px 12px;margin:5px 4px 5px 0}button:disabled{opacity:.5}
+pre{background:#08090b;padding:16px;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #555;max-height:50vh;overflow:auto}
+</style></head><body>
+<a href="./">← Felucca SMK</a><h1>MIDI connection check</h1>
+<p>This check only asks for the device identity. It does not enter update mode, upload a loader, or write firmware.</p>
+<p>Close Studio, the installer, and other MIDI apps before checking. Disconnect unrelated MIDI devices.
+If checking a failed loader handoff, leave the SMK in its current state and run this check before power-cycling it.</p>
+<button id="enable">Enable MIDI access</button>
+<label for="output">MIDI output</label> <select id="output" disabled><option>No MIDI access</option></select>
+<button id="probe" disabled>Check identity</button><button id="save" disabled>Save diagnostic log</button>
+<p id="status" role="status">Use Chrome or Edge. Allow MIDI/SysEx access when prompted.</p>
+<p>The log stays in this page until you save or share it. It records device names and identity replies, not your playing.</p>
+<pre id="log" aria-live="polite"></pre>
+<script type="module" src="midi-diagnostics-page.js"></script>
+</body></html>
