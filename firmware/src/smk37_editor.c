@@ -266,7 +266,11 @@ static unsigned smk37_editor_handle(const uint8_t *f,unsigned n){
     case 1:
         if(na)return 0;
 #if SMK37_ENABLE_USB_UPDATE
+#if SMK37_PUBLIC_BUILD
+        smk37_ed_string(SMK37_UPDATE_VERSION,24);
+#else
         smk37_ed_string("FELUCCA " SMK37_UPDATE_VERSION,24);
+#endif
 #elif SMK37_ENABLE_SAVES
         smk37_ed_string("FELUCCA SMK37 TEST10 SAVE",24);
 #else

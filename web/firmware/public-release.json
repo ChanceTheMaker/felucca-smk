@@ -1,0 +1,18 @@
+{
+  "public": true,
+  "version": "Felucca SMK 0.9.22 Beta",
+  "product": "SMK-37_922",
+  "app": "felucca-smk-0.9.22-app.bin",
+  "bytes": 413832,
+  "sha256": "0e7961ffc99554e23326dfeb8d4ab56fe142878a05c3d51360f0eebd55076282",
+  "supported_models": [
+    "SMK-37 Pro",
+    "SMK-37 Elite"
+  ],
+  "stock_version": "016",
+  "upstream_version": "1.5.1",
+  "upstream_revision": "a4d7ca2e5d52a4c35e2468401f00d883cadbda03",
+  "hardware_validation": "Development features exercised on Pro through Test21; public first-install path awaits hardware confirmation.",
+  "source": "https://github.com/ChanceTheMaker/felucca-smk",
+  "license": "GPL-3.0-only"
+}

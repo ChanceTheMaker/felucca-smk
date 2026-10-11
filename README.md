@@ -8,7 +8,7 @@ Felucca SMK brings Felucca's synthesis and sequencing to the SMK's 37-key keyboa
 pads, eight knobs, four faders, pitch/mod wheels and display.
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
-[![Version: 0.9.21 Beta](https://img.shields.io/badge/version-0.9.21%20Beta-orange.svg)](firmware/hal/smk37_version.h)
+[![Version: 0.9.22 Beta](https://img.shields.io/badge/version-0.9.22%20Beta-orange.svg)](firmware/hal/smk37_version.h)
 
 [Source](https://github.com/ChanceTheMaker/felucca-smk) |
 [Issues](https://github.com/ChanceTheMaker/felucca-smk/issues) |
@@ -21,7 +21,7 @@ pads, eight knobs, four faders, pitch/mod wheels and display.
 
 ## Project status
 
-The product version is **0.9.21 Beta**, integrating upstream **Felucca 1.5.1**
+The product version is **0.9.22 Beta**, integrating upstream **Felucca 1.5.1**
 at `a4d7ca2e5d52a4c35e2468401f00d883cadbda03`. This is the standalone SMK
 repository. The [FM-1 Salt project](https://github.com/ChanceTheMaker/Felucca)
 is separate; its firmware images are not interchangeable with SMK images.
@@ -32,7 +32,7 @@ is separate; its firmware images are not interchangeable with SMK images.
 | Hardware firmware | Test21 has been exercised on the owner's SMK-37 Pro. Device test records describe the checks and remaining work. |
 | Pro & Elite support | Both models are project targets. Stock-package comparisons cover both; the recorded physical tests are on Pro hardware. |
 | Normal USB updates | Tested on the owner's SMK running the custom updater. Existing private packages are tied to that test device. |
-| General public installation | In development. The portable Test22 candidate compiles, but the stock-to-Felucca installation path and broader-unit validation are not complete. |
+| General public installation | 0.9.22 public beta installer for official Pro/Elite 016; package and transport tests pass. Stock-hardware first-install confirmation remains pending. |
 | Website deployment | Studio, Simulator and the homepage deploy through GitHub Pages; hardware firmware publication remains separate. |
 
 The website destination is [Felucca SMK](https://chancethemaker.github.io/felucca-smk/),
@@ -197,15 +197,35 @@ can fail and firmware/storage changes can lose data. Preserve your sounds and
 settings and use only a package intended for your exact device and supported
 installation path. The software is supplied without warranty; see [LICENSE](LICENSE).
 
-Normal-USB updates have worked on the test SMK with the custom updater already
-installed. Those existing packages contain device-specific data and are not
-public downloads. Stock firmware does not already contain that updater.
+The public installer prepares the firmware in your browser from your model's
+unmodified official **Pro 016** or **Elite 016** `.fwsc` file and the published
+Felucca application. The official file is not uploaded or redistributed.
 
-Work on broader public installation preserves model/layout checks, calibration
-and flash-write boundaries. The portable candidate and local package builder
-are development work, not a completed stock-first-install release. There is no
-general installation procedure to follow from a fresh clone yet. Neither the
-website nor this README should be treated as approval to flash a raw build.
+1. Back up sounds/settings and confirm your keyboard is running official 016.
+2. Open the [installer](https://chancethemaker.github.io/felucca-smk/) in Chrome
+   or Edge. Close Studio and other MIDI apps.
+3. Select the official `.fwsc` file for your exact model (unzip it first).
+4. Choose **First installation**, acknowledge the beta notice, then Install.
+5. Keep USB and power connected until the normal device identity returns.
+
+For subsequent public releases choose **Update**, starting from 0.9.22 or later.
+Earlier private Test11–Test21 builds use a unit-bound updater and are refused
+before entering update mode. Their local preview remains at `/?private=1` when
+an explicit private candidate is staged; they need a separate migration.
+
+The first-install flow uses the official model-specific package and vendor
+loader. Packaging changes only app bytes/checksums and keeps other payloads
+identical. The Felucca RAM updater additionally validates model boot data and
+each device's own calibration, limits writes to the application region, and
+verifies protected regions after updating.
+
+**Validation:** package round trips pass with both official 016 files; host
+loader tests cover different calibration records, corrupt input, interruption,
+retry and protected ranges. Transport tests cover wrong models/versions and
+failed stages. Development firmware has been exercised on a Pro through Test21;
+this new public first-install path still needs confirmation on stock hardware.
+A failed installation can require hardware recovery. Do not flash the raw app
+binary directly: it is a component for the installer, not a complete image.
 
 Vendor firmware, private device backups and calibration dumps are not distributed
 in this repository. **Do not install an FM-1 image on an SMK, or an SMK image on

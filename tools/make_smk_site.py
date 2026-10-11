@@ -3,6 +3,8 @@
 """Stage the SMK website for Pages; never copy private device/build files."""
 import argparse
 import shutil
+import json
+import hashlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +30,19 @@ def main():
             shutil.copy2(source, out / 'audio' / source.name)
     for name in ('LICENSE', 'LICENSING.md'):
         shutil.copy2(ROOT / name, out / name)
+    # Explicit release allowlist: never stage private candidates or vendor files.
+    release_path=web/'firmware/public-release.json'
+    if release_path.exists():
+        release=json.loads(release_path.read_text())
+        if release.get('public') is not True or release.get('app')!='felucca-smk-0.9.22-app.bin':
+            raise ValueError('Unsupported public release manifest')
+        app=web/'firmware'/release['app']
+        data=app.read_bytes()
+        if len(data)!=release['bytes'] or hashlib.sha256(data).hexdigest()!=release['sha256']:
+            raise ValueError('Public application digest mismatch')
+        (out/'firmware').mkdir()
+        shutil.copy2(release_path,out/'firmware/public-release.json')
+        shutil.copy2(app,out/'firmware'/app.name)
     shutil.copytree(ROOT / 'LICENSES', out / 'LICENSES')
     (out / '.nojekyll').write_text('')
     print(f'SMK site: {out}')
