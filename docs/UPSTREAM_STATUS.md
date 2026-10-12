@@ -1,3 +1,15 @@
+## Doom SMK installer compatibility - 2026-10-12
+
+The website now recognizes Doom-SMK-37 and its active RAM loader, using
+the existing portable SMK package instead of staging the official stock image.
+Doom updater versions below 007 and Doom-FM-1 remain excluded. Exact returned
+Felucca identity, package checksums and application flash boundaries are retained.
+No firmware binary, upstream code, storage layout or calibration changes.
+Host installer tests cover running Doom, loader resume, manual update, outdated
+Doom refusal, FM-1 exclusion and incorrect returned firmware. Physical Doom-to-
+Sloop handoff exercised the shared flow; Felucca-specific hardware install was
+not repeated. This is a fork website fix, not an upstream contribution.
+
 # Felucca SMK 0.9.23 update — 2026-10-11
 
 Focused port from Sloop SMK 7dc90af: TRS persistence and tracked Note Off cleanup.
