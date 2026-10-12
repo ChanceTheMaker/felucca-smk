@@ -1,9 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import {parsePackage,installSmk,installStockSmk} from './smk37-update.js?v=elite-diag1';
+import {parsePackage,installSmk,installStockSmk} from './smk37-update.js?v=smk-flow-r1';
 import {buildSmkPublicPackage} from './smk37-package.js?v=0.9.22-r4';
 import {STOCK_SOURCES} from './smk37-stock.js?v=0.9.22-r4';
 const status=document.getElementById('status'),button=document.getElementById('install-button'),ack=document.getElementById('ack'),output=document.getElementById('log');
 const file=document.getElementById('stock-file'),path=document.getElementById('install-path'),model=document.getElementById('smk-model');
+const dialog=document.getElementById('loader-confirm');
+async function confirmGeneric({identity,port,model}){
+  document.getElementById('loader-identity').textContent=identity+' on '+port;
+  document.getElementById('loader-model').textContent=model;
+  log('Confirm the connected Elite in the dialog to continue this installation.');
+  dialog.returnValue='cancel';
+  return new Promise(resolve=>{
+    dialog.addEventListener('close',()=>resolve(dialog.returnValue==='continue'),{once:true});
+    dialog.showModal();
+  });
+}
 const loopback=['localhost','127.0.0.1','[::1]'].includes(location.hostname);
 const privateRequested=loopback&&new URLSearchParams(location.search).has('private');
 const publicPreview=loopback&&new URLSearchParams(location.search).has('public');
@@ -27,6 +38,13 @@ async function prepare(stockOverride){
   }catch(e){if(request===selection){log(e.message);document.getElementById('manual-file').open=true;}}
   finally{if(request===selection)sync();}
 }
+model.addEventListener('change',()=>{file.value='';prepare();});
+file.addEventListener('change',async()=>{
+  if(!file.files?.length)return;
+  const selected=file.files[0];
+  if(selected.size>32*1024*1024){pkg=null;sync();log('Select an official SMK .fwsc file, not a ZIP archive or backup.');return;}
+  await prepare(new Uint8Array(await selected.arrayBuffer()));
+});
 try{
   if(loopback&&(!publicPreview||privateRequested)){
     try{
@@ -45,16 +63,9 @@ try{
     release=JSON.parse(new TextDecoder().decode(await fetchBytes('./firmware/public-release.json')));
     if(release.public!==true||release.product!=='SMK-37_922'||release.app!=='felucca-smk-0.9.22-app.bin'||!/^[a-f0-9]{64}$/.test(release.sha256))throw Error('Invalid public release metadata.');
     document.getElementById('release').textContent=release.version;
-    await prepare();
+    prepare();
   }
 }catch(e){release=null;pkg=null;log(e.message);document.getElementById('release').textContent='Firmware download unavailable';}
-model.addEventListener('change',()=>{file.value='';prepare();});
-file.addEventListener('change',async()=>{
-  if(!file.files?.length)return;
-  const selected=file.files[0];
-  if(selected.size>32*1024*1024){pkg=null;sync();log('Select an official SMK .fwsc file, not a ZIP archive or backup.');return;}
-  await prepare(new Uint8Array(await selected.arrayBuffer()));
-});
 if(!navigator.requestMIDIAccess)log('Web MIDI is unavailable. Open this page in Chrome or Edge.');
 sync();
 button.addEventListener('click',async()=>{
@@ -62,6 +73,6 @@ button.addEventListener('click',async()=>{
   try{
     const midi=await navigator.requestMIDIAccess({sysex:true});
     if(usingPrivate||path.value==='update')await installSmk(midi,pkg,log);
-    else await installStockSmk(midi,pkg,log);
+    else await installStockSmk(midi,pkg,log,{confirmGeneric});
   }catch(e){log(e.message);}finally{busy=false;sync();}
 });

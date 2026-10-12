@@ -148,6 +148,69 @@ export class Updater {
     return null;
   }
 
+  // Probe one output at a time, listening on every input. macOS can label
+  // the loader's input and output differently. Discovery sends identity only.
+  async findAny(filter, {probeMs=700, openMs=1500, deadline=Infinity}={}) {
+    const inputs=[...this.access.inputs.values()].filter(p=>p.state!=='disconnected');
+    const outputs=[...this.access.outputs.values()].filter(p=>p.state!=='disconnected');
+    const opened=new Set(), listeners=[], matches=[];
+    let querying=null, selected=null;
+    const bounded=(operation,ms)=>new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>reject(Error('MIDI port timed out')),ms);
+      Promise.resolve(operation).then(v=>{clearTimeout(timer);resolve(v);},e=>{clearTimeout(timer);reject(e);});
+    });
+    const closePort=async p=>{try{await bounded(p.close(),openMs);}catch(e){this.log('Could not release MIDI port '+p.name+': '+e.message);}};
+    const open=async p=>{
+      let expired=false;
+      try{
+        if(p.connection!=='open')opened.add(p);
+        const pending=p.open();
+        Promise.resolve(pending).then(()=>{if(expired&&opened.has(p))return closePort(p);},()=>{});
+        await bounded(pending,openMs);return true;
+      }catch(e){expired=true;this.log('Cannot open MIDI port '+p.name+': '+e.message);return false;}
+    };
+    try {
+      for(const input of inputs){
+        if(!await open(input))continue;
+        const receive=ev=>{
+          if(!querying)return;
+          const id=parseIdentity(Array.from(ev.data));
+          if(!id)return;
+          this.log('Identity '+id.text+' on input "'+input.name+'", queried output "'+querying.name+'".');
+          if(filter(id)&&!matches.some(m=>m.input===input&&m.output===querying&&m.id.text===id.text))matches.push({input,output:querying,id});
+        };
+        input.addEventListener('midimessage',receive);listeners.push([input,receive]);
+      }
+      for(const output of outputs){
+        if(Date.now()>=deadline)break;
+        if(!await open(output))continue;
+        querying=output;
+        try{output.send(HS_QUERY);await sleep(Math.max(0,Math.min(probeMs,deadline-Date.now())));}catch(e){this.log('Identity query failed: '+e.message);}
+        querying=null;
+      }
+      if(new Set(matches.map(m=>m.input)).size>1||new Set(matches.map(m=>m.id.text)).size>1)
+        throw Error('More than one matching MIDI device replied. Connect only the target SMK and retry. No programming started.');
+      selected=matches.find(m=>m.input.name===m.output.name)||matches[0];
+    } finally {
+      for(const [input,receive] of listeners)input.removeEventListener('midimessage',receive);
+      await Promise.allSettled([...opened].filter(p=>p!==selected?.input&&p!==selected?.output).map(closePort));
+    }
+    if(!selected)return null;
+    const {input,output,id}=selected,link=new Link(input,output),close=link.close.bind(link);
+    link.close=()=>{close();return Promise.allSettled([input,output].filter(p=>opened.has(p)).map(closePort));};
+    return {id,link,name:output.name,inputName:input.name};
+  }
+
+  async waitForAny(filter, ms) {
+    const end=Date.now()+ms;
+    do {
+      const dev=await this.findAny(filter,{deadline:end});
+      if(dev)return dev;
+      if(Date.now()<end)await sleep(Math.min(500,end-Date.now()));
+    } while(Date.now()<end);
+    return null;
+  }
+
   async waitFor(filter, ms) {
     const end = Date.now() + ms;
     while (Date.now() < end) {
