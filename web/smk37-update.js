@@ -18,21 +18,24 @@ export async function parsePackage(bytes,expectedSha){
   if(!expectedSha||sha!==expectedSha)throw Error('This package is not the reviewed candidate for this local installer.');
   return {bytes,product,version,sha,format};
 }
-const SMK_PORT=/smk|felucca|sloop|melodee|ota|composite|sinco|usb-midi/i;
+const SMK_PORT=/smk|felucca|sloop|melodee|doom|ota|composite|sinco|usb-midi/i;
+const doom=id=>id.model==='Doom-SMK-37'||id.model==='ota-Doom-SMK-37';
+const portable=id=>id.model==='SMK-37'||id.model==='ota-SMK-37'||doom(id);
 const START=[0xf0,0x22,0x24,0x35,0x7f,0xf7];
 export async function installSmk(access,pkg,log=()=>{},{device}={}){
   const up=new Updater(access,log,SMK_PORT);let link;
   try {
     // Exact model filter; the shared transport never sends START to FM-1.
-    let dev=device||await up.findAny(id=>id.model==='ota-SMK-37'||id.model==='SMK-37');
+    let dev=device||await up.findAny(portable);
     if(!dev)throw Error('No updater-enabled SMK replied. Close other MIDI apps, or choose Automatic install / resume for official 016 firmware.');
     link=dev.link;
-    if(pkg.format===2 && (!Number.isInteger(dev.id.version)||dev.id.version<922))throw Error('This older private updater cannot accept the portable package. It needs a separate migration; no update was started.');
-    if(dev.id.model==='SMK-37'){
+    if(pkg.format===2 && (!Number.isInteger(dev.id.version)||dev.id.version<(doom(dev.id)?7:922)))throw Error('This older private updater cannot accept the portable package. It needs a separate migration; no update was started.');
+    if(dev.id.model==='SMK-37'||dev.id.model==='Doom-SMK-37'){
+      const loaderModel='ota-'+dev.id.model;
       log('Entering SMK update mode. No flash has been written.');
       if(!link.send(START))throw Error('SMK disconnected before update mode.');
       await link.close();link=null;
-      dev=await up.waitForAny(id=>id.model==='ota-SMK-37',30000);
+      dev=await up.waitForAny(id=>id.model===loaderModel,30000);
       if(!dev)throw Error('SMK RAM loader did not appear. No browser programming started.');
       link=dev.link;
     }
@@ -66,11 +69,10 @@ export async function installStockSmk(access,pkg,log=()=>{},{confirmGeneric}={})
   if(!pkg?.image||!['SMK-37 Pro','SMK-37 Elite'].includes(pkg.stockModel)||pkg.format!==2)throw Error('A verified SMK stock-derived package is required.');
   const up=new Updater(access,log,SMK_PORT);let link;
   const loader=id=>id.model==='ota-'+pkg.stockModel||id.model==='ota-FM-1';
-  const portable=id=>id.model==='SMK-37'||id.model==='ota-SMK-37';
   try{
     log('Looking for '+pkg.stockModel+' or its active loader...');
     let dev=await up.findAny(id=>portable(id)||loader(id)||(id.model===pkg.stockModel&&id.version===16));
-    if(!dev)throw Error('No matching SMK replied. Connect only '+pkg.stockModel+' running official 016 firmware or its active loader. Close other MIDI apps, then use Install / resume.');
+    if(!dev)throw Error('No matching SMK replied. Connect only '+pkg.stockModel+' running official 016, Felucca, Sloop, Melodee or updater-enabled Doom. Close other MIDI apps, then use Install / resume.');
     if(portable(dev.id)){
       log('Found '+dev.id.text+' on '+dev.name+'. Using its existing SMK USB updater.');
       return await installSmk(access,pkg,log,{device:dev});
@@ -97,7 +99,7 @@ export async function installStockSmk(access,pkg,log=()=>{},{confirmGeneric}={})
     const result=await up.serve(link,pkg.image,0xf0000000,180000,n=>{if(n%64===0)log('Installing: '+n+' transfer requests');});
     if(!result.finished)throw Error('Installation did not finish. Keep the SMK powered and save the log. No automatic write retry was attempted.');
     await link.close();link=null;
-    log('Loader transfer complete. Waiting for Sloop to restart...');
+    log('Loader transfer complete. Waiting for Felucca to restart...');
     const back=await up.waitForAny(id=>id.model==='SMK-37',40000);
     if(!back)throw Error('The loader completed, but Felucca SMK did not return. Save the log and inspect the device.');
     link=back.link;
