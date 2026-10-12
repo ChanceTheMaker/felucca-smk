@@ -567,3 +567,7 @@ Both models reached ready status in Chrome; updater regression tests passed.
 The owner installed the private migration successfully with verified readback and
 returned identity SMK-37_922. Stock first-install hardware confirmation remains
 pending. Private packages stay outside Git and Pages. Fork-only contribution.
+
+## Website family navigation — 2026-10-11
+
+Added footer links among SMKLab, Felucca SMK, Sloop SMK and Melodee SMK on the homepage, Studio and simulator. Website-only change; published firmware and protocols remain unchanged. Local link/markup checks pass. No upstream contribution is intended for this branding/navigation change.

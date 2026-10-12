@@ -836,3 +836,6 @@ footer a { text-underline-offset:3px; }
 .installer-page .back-to-top:focus-visible { outline:2px solid var(--fg); outline-offset:3px; }
 .back-to-top svg { width:23px; height:23px; }
 #page-top:focus { outline:none; }
+
+/* Shared SMK family destinations; follows each site’s own palette. */
+.smk-family{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 20px;padding:18px 0;margin:0 0 18px;border-block:1px solid var(--line,#59626b);font:600 12px/1.6 system-ui,sans-serif;letter-spacing:0;text-align:center}.smk-family span{flex-basis:100%;font-size:10px;letter-spacing:.13em;text-transform:uppercase;opacity:.8}.smk-family a{color:inherit;text-decoration:underline;text-underline-offset:4px}.smk-family a:hover{color:var(--accent,currentColor)}.smk-family a:focus-visible{outline:2px solid currentColor;outline-offset:4px}
