@@ -22,6 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: node web/restore-stock/test_restore.mjs
       - run: node web/test_analytics.mjs && node web/test_midi_input.mjs && node web/audio/test_smk_engine.mjs && node web/audio/test_smk_worklet.mjs
       - run: node web/test_midi_diagnostics.mjs && node web/test_smk37_handoff.mjs && node web/test_smk37_update.mjs && node web/test_smk37_public.mjs && sh tools/test_smk37_public.sh
       - run: node web/test_install_flow.mjs && node web/test_discovery.mjs
