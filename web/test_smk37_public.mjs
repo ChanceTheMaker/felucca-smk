@@ -4,21 +4,21 @@ import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {buildSmkPublicPackage,smkLogicalImage} from './smk37-package.js';
 import {parsePackage,installStockSmk,installSmk,LO,HI} from './smk37-update.js';
-import {Updater} from './fm1ota.js?v=elite-diag1';
+import {Updater} from './fm1ota.js?v=smk-flow-r1';
 import {sha256hex} from './fm1pkg.js';
 
 // No MIDI hardware is opened. Exercise transport decisions with simulated links.
-const saved=Object.fromEntries(['find','waitFor','serve'].map(k=>[k,Updater.prototype[k]]));
+const saved=Object.fromEntries(['findAny','waitForAny','serve'].map(k=>[k,Updater.prototype[k]]));
 let sends=0,closes=0,serves=0,phase=0,scenario='success';
 const link=()=>({send(){sends++;return true;},close(){closes++;}});
 const pkg={format:2,image:new Uint8Array(64),stockModel:'SMK-37 Pro',product:'SMK-37_922',version:'Felucca SMK 0.9.22 Beta'};
 try{
-  Updater.prototype.find=async function(filter){
+  Updater.prototype.findAny=async function(filter){
     for(const id of [{model:'FM-1',version:16},{model:'SMK-37 Elite',version:16},{model:'SMK-37 Pro',version:15}])assert.equal(filter(id),false);
     const id={model:pkg.stockModel,version:16,text:pkg.stockModel+'_016'};
     assert.ok(filter(id));return scenario==='missing'?null:{id,link:link()};
   };
-  Updater.prototype.waitFor=async function(filter){
+  Updater.prototype.waitForAny=async function(filter){
     phase++;if(scenario==='no-loader')return null;
     const id=phase===1?{model:'ota-'+pkg.stockModel}:{model:'SMK-37',text:scenario==='wrong-return'?'SMK-37_921':pkg.product};
     assert.ok(filter(id));return {id,link:link()};
@@ -27,14 +27,14 @@ try{
     serves++;assert.equal(image,pkg.image);assert.equal(end,serves===1?0xe0000000:0xf0000000);
     return {finished:!(scenario==='first-failure'&&serves===1)&&!(scenario==='write-failure'&&serves===2)};
   };
-  for(const [caseName,pattern] of [['success',null],['missing',/Connect/],['first-failure',/preparation/],['no-loader',/did not appear/],['write-failure',/did not finish/],['wrong-return',/Expected/]]){
+  for(const [caseName,pattern] of [['success',null],['missing',/Connect/],['first-failure',/preparation/],['no-loader',/has not replied/],['write-failure',/did not finish/],['wrong-return',/Expected/]]){
     scenario=caseName;sends=closes=serves=phase=0;
     if(pattern)await assert.rejects(installStockSmk({},pkg),pattern);else await installStockSmk({},pkg);
     if(caseName==='missing')assert.equal(sends,0);
     if(['first-failure','no-loader'].includes(caseName))assert.equal(serves,1);
     if(caseName==='success'){assert.equal(sends,2);assert.equal(closes,3);}
   }
-  sends=0;Updater.prototype.find=async()=>({id:{model:'SMK-37',version:921},link:link()});
+  sends=0;Updater.prototype.findAny=async()=>({id:{model:'SMK-37',version:921},link:link()});
   await assert.rejects(installSmk({},pkg),/older private/);assert.equal(sends,0);
 }finally{Object.assign(Updater.prototype,saved);}
 console.log('Public installer: exact model/version, stage failures, identity mismatch, cleanup and legacy-loader refusal passed');

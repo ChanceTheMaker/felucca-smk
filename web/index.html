@@ -49,8 +49,11 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
       <label for="install-path">Installation type <select id="install-path"><option value="stock">First installation — official 016 firmware</option><option value="update">Update — Felucca SMK 0.9.22 or later</option></select></label>
       <details id="manual-file"><summary>Automatic download unavailable?</summary><label for="stock-file">Use an official 016 .fwsc file instead <input id="stock-file" type="file" accept=".fwsc"></label></details>
     </div>
-    <label><input type="checkbox" id="ack"> I understand this is beta firmware, have backed up my sounds and settings, and accept that a failed installation may require hardware recovery.</label>
-    <button class="primary" id="install-button" disabled>Install SMK beta</button>
+        <dialog id="loader-confirm" aria-labelledby="loader-title" style="max-width:480px;background:var(--panel,#202226);color:var(--fg,#fff);border:1px solid #e49a36;border-radius:12px;padding:24px">
+      <form method="dialog"><h2 id="loader-title">Confirm your Elite</h2><p>The connected loader identifies itself as <strong id="loader-identity"></strong>. That name is also used by FM-1 devices.</p><p>Continue only if the connected device is your <strong id="loader-model"></strong> with a black screen and every real FM-1 is disconnected. This will write Felucca SMK firmware to that device.</p><div style="display:flex;gap:12px;flex-wrap:wrap"><button value="cancel" autofocus>Cancel</button><button class="primary" value="continue">This is my Elite — continue</button></div></form>
+    </dialog>
+<label><input type="checkbox" id="ack"> I understand this is beta firmware, have backed up my sounds and settings, and accept that a failed installation may require hardware recovery.</label>
+    <button class="primary" id="install-button" disabled>Install / resume SMK beta</button>
     <p class="small">Keep USB and device power connected until installation completes. First installation uses your model’s official loader. The prepared package changes application content only. Later Felucca updates enforce application-only writes, excluding calibration, projects and presets.</p>
     <p class="small">This public first-install path has passed software tests; installation on stock hardware still needs confirmation. Earlier development builds were tested on the Pro. Provided without warranty.</p>
     <details><summary>Installation log</summary><pre id="log" aria-live="polite"></pre></details>
