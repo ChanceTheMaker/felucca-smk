@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {SMKBrowserSynth} from './audio/smk-browser.js?startup=2';
 import {mountMIDIInput} from './midi-input.js';
-import {createSMKSimulator} from './smk-simulator.js';
+import {createSMKSimulator} from './smk-simulator.js?pads=1';
 const $=id=>document.getElementById(id),synth=new SMKBrowserSynth();
 let panel=null,running=false,busy=false,starting=null;
 const title=()=>{document.title='Felucca SMK — Simulator';};
