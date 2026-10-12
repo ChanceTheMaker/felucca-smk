@@ -131,6 +131,6 @@ static void smk37_workflow_card(unsigned page,unsigned c,const char **label,char
     if(page==SMK37_SLICE_PAGE){names=wf_names_9;if(!c){if(smk37_slice_sel>=smk37_slice_count())str_cpy(value,"END",24);else fmt_int(value,smk37_slice_sel+1);}if(c==1)fmt_int(value,smk37_slice_mark(smk37_slice_sel));}
     if(page==SMK37_UNDO_PAGE){names=wf_names_10;fmt_int(value,c==0?smk37_sound_undo.valid:c==1?smk37_sound_undo.track+1:c==2?smk37_undo.valid:smk37_undo.track+1);}
     if(page==SMK37_NAME_PAGE){names=wf_names_11;if(!c)fmt_int(value,smk37_name_pos+1);if(c==1){value[0]=smk37_name[smk37_name_pos];value[1]=0;}if(c==2)fmt_int(value,smk37_name_slot+1);}
-    if(page==SMK37_PHRASE_PAGE){static const char *const pn[]={"PHRASE","TRACK","STEPS","> LOAD"};names=pn;if(!c)fmt_int(value,smk37_phrase+1);if(c==1)fmt_int(value,song.sel+1);if(c==2){unsigned k=smk37_phrase_slot(smk37_phrase);fmt_int(value,k<8?smk37_user_phrase[k].timing[0]:16);}}
+    if(page==SMK37_PHRASE_PAGE){static const char *const pn[]={"PHRASE","TRACK","STEPS","> LOAD"};names=pn;if(!c)fmt_int(value,smk37_phrase+1);if(c==1)fmt_int(value,song.sel+1);if(c==2){unsigned k=smk37_phrase_slot(smk37_phrase);fmt_int(value,k<smk37_user_capacity?smk37_user_phrase[k].timing[0]:16);}}
     *label=names[c];
 }

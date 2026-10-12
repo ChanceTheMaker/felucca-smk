@@ -5,6 +5,7 @@
 #define SMK37_SYNTH_HOST_TEST 1
 #define SMK37_ENABLE_SAVES 1
 #define SMK37_ENABLE_PRESETS 1
+#define SMK37_EXPANDED_PRESETS 1
 #define SMK37_ENABLE_SAMPLES 1
 #include "../../firmware/src/smk37_synth.c"
 static void midi_out_event(uint32_t p){(void)p;}

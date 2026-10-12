@@ -20,8 +20,12 @@ for(let eng=0;eng<info.nengines;eng++){
 decode(CMD.PRESET,0,0);
 assert.equal(decode(CMD.SMP_INFO).nslots,3);
 assert.equal(decode(CMD.DUMP).p.length,111);
-const {hdr,data}=buildSlot('WEB TEST',[{s:Int16Array.from({length:3000},(_,i)=>Math.round(8000*Math.sin(i/7))),root:60}]);
 const request=([cmd,args])=>decode(cmd,...args);
+assert.equal(decode(CMD.UP_LIST,0,8).total,32);
+assert.equal(request(req.upStore(31,'LAST SLOT')).rc,0);
+assert.equal(decode(CMD.UP_LIST,24,8).slots[7].name,'LAST SLOT');
+const {hdr,data}=buildSlot('WEB TEST',[{s:Int16Array.from({length:3000},(_,i)=>Math.round(8000*Math.sin(i/7))),root:60}]);
+
 assert.equal(request(req.smpBegin(1)).rc,0);
 for(let off=0;off<data.length;off+=256)assert.equal(request(req.smpWrite(1,SMP.DATA_OFF+off,data.subarray(off,off+256))).rc,0);
 assert.equal(request(req.smpEnd(1,hdr)).rc,0);assert.equal(decode(CMD.SMP_INFO).slots[1].name,'WEB TEST');
@@ -29,6 +33,7 @@ const before=command(2,0,1);command(3,0,1,42,64);assert.equal(command(2,0,1)[7],
 const snapshot=mem.slice(e.fw_snapshot(),e.fw_snapshot()+e.fw_snapshot_size());
 command(3,0,1,9,64);mem.set(snapshot,e.fw_snapshot());assert.equal(e.fw_restore(),0);assert.equal(command(2,0,1)[7],42);
 assert.equal(decode(CMD.SMP_INFO).slots[1].name,'WEB TEST');
+assert.equal(decode(CMD.UP_LIST,24,8).slots[7].name,'LAST SLOT');
 command(3,0,1,before[7],before[8]);
 command(9,1,0);assert.equal(command(9,2,0)[7],1);
 for(let b=0;b<10;b++)e.synth_render();

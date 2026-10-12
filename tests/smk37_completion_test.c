@@ -12,9 +12,9 @@ static void fm1_irq_on(void){locked=0;}
 static uint8_t flash[0x100000],saved[0x100000];
 static int allowance=-1,header_cut=-1;
 static int operation(void){if(allowance<0)return 0;if(!allowance)return -1;--allowance;return 0;}
-static int smk37_storage_read(uint32_t a,void *p,uint32_t n){assert(!locked);assert(smk37_store_range(a,n)||SMK37_PRESET_RANGE(a,n));memcpy(p,flash+a,n);return 0;}
-static int smk37_storage_erase(uint32_t a){assert(!locked && !(a&4095));assert(smk37_store_range(a,4096)||SMK37_PRESET_RANGE(a,4096));if(operation())return -1;memset(flash+a,255,4096);return 0;}
-static int smk37_storage_program(uint32_t a,const void *p,uint32_t n){assert(!locked && n<=256 && (a&255)+n<=256);assert(smk37_store_range(a,n)||SMK37_PRESET_RANGE(a,n));if(operation())return -1;
+static int smk37_storage_read(uint32_t a,void *p,uint32_t n){assert(!locked);assert(smk37_store_range(a,n)||SMK37_PRESET_RANGE(a,n)||(SMK37_EXPANDED_PRESETS&&SMK37_EXPANDED_RANGE(a,n)));memcpy(p,flash+a,n);return 0;}
+static int smk37_storage_erase(uint32_t a){assert(!locked && !(a&4095));assert(smk37_store_range(a,4096)||SMK37_PRESET_RANGE(a,4096)||(SMK37_EXPANDED_PRESETS&&SMK37_EXPANDED_RANGE(a,4096)));if(operation())return -1;memset(flash+a,255,4096);return 0;}
+static int smk37_storage_program(uint32_t a,const void *p,uint32_t n){assert(!locked && n<=256 && (a&255)+n<=256);assert(smk37_store_range(a,n)||SMK37_PRESET_RANGE(a,n)||(SMK37_EXPANDED_PRESETS&&SMK37_EXPANDED_RANGE(a,n)));if(operation())return -1;
     int cut=!(a&4095)&&header_cut>=0;unsigned bytes=cut?(unsigned)header_cut:n;
     for(unsigned i=0;i<bytes;++i)flash[a+i]&=((const uint8_t *)p)[i];return cut?-1:0;}
 static void protected(void){for(unsigned i=0;i<sizeof flash;++i)if(!SMK37_PRESET_RANGE(i,1))assert(flash[i]==saved[i]);}

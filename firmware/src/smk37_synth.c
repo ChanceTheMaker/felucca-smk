@@ -29,6 +29,11 @@ static volatile uint8_t smk37_samples_request;
 #ifndef SMK37_ENABLE_TRS
 #define SMK37_ENABLE_TRS 0
 #endif
+#ifndef SMK37_EXPANDED_PRESETS
+#define SMK37_EXPANDED_PRESETS 0
+#endif
+#define SMK37_UP_SLOTS (SMK37_EXPANDED_PRESETS?32u:8u)
+static uint8_t smk37_user_capacity=8;
 static uint8_t smk37_trs_enabled;
 static uint32_t smk37_trs_bytes;
 #if SMK37_ENABLE_TRS

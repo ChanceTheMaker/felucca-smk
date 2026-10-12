@@ -1,3 +1,11 @@
+# Felucca SMK 0.9.23 update — 2026-10-11
+
+Focused port from Sloop SMK 7dc90af: TRS persistence and tracked Note Off cleanup.
+Upstream remains Felucca 1.5.1 at a4d7ca2e5d52a4c35e2468401f00d883cadbda03.
+Adds guarded 32-slot preset migration and fixes the erase-driver output pointer.
+Browser runtime rebuilt. No upstream PR; this work is specific to our SMK fork.
+[Release evidence and hardware limitations](smk37/RELEASE_0.9.23.md).
+
 ## Elite loader handoff capture v2 — 2026-10-11
 
 Contributor stock diagnostic evidence confirms matching Elite -Private input/output

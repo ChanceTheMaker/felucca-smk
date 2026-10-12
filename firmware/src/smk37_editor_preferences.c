@@ -23,7 +23,7 @@ static unsigned smk37_editor_preferences(unsigned cmd,const uint8_t *a,unsigned 
         smk37_ed_byte(rc);smk37_ed_byte(n?a[0]:127);smk37_ed_byte(n>1?a[1]:127);smk37_ed_ui_state();break;
     case 36:if(n)return 0;smk37_ed_byte(UI_NPALETTES);for(unsigned i=0;i<UI_NPALETTES;++i)smk37_ed_string(UI_PALETTES[i].name,12);break;
     case 37:case 38:{
-        int p=n==4?smk37_ed_read(a+1):-1;unsigned limit=n==4 && a[0]<=NENGINES?(a[0]==NENGINES?SMK37_UP_SLOTS:ENGINES[a[0]]->npresets):0;
+        int p=n==4?smk37_ed_read(a+1):-1;unsigned limit=n==4 && a[0]<=NENGINES?(a[0]==NENGINES?smk37_user_capacity:ENGINES[a[0]]->npresets):0;
         if(n!=4 || p<0 || !limit || (cmd==37?(!a[3] || a[3]>32 || (unsigned)p+a[3]>limit):((unsigned)p>=limit || a[3]>1 || (a[0]==NENGINES && a[3] && !smk37_up_used(p))))){smk37_ed_byte(1);break;}
         if(cmd==38){fm1_irq_off();favorite_set(a[0],p,a[3]);smk37_browser_fix();fm1_irq_on();rc=smk37_ed_ui_save();}
         smk37_ed_byte(rc);smk37_ed_byte(a[0]);smk37_ed_value(p);smk37_ed_byte(a[3]);

@@ -35,7 +35,7 @@ for component in chord midi_control midi_uart; do
 done
 
 # Real Test12 save migration and the SMK adapters for upstream 1.5.1.
-for component in smk37_upstream smk37_store smk37_object_store smk37_samples smk37_sample_draw smk37_midi_tx smk37_midi_output smk37_completion smk37_draw smk37_workflow smk37_test19 smk37_test20 smk37_test21; do
+for component in smk37_upstream smk37_store smk37_object_store smk37_samples smk37_sample_draw smk37_midi_tx smk37_midi_output smk37_completion smk37_draw smk37_workflow smk37_test19 smk37_test20 smk37_test21 smk37_test23; do
     cc -std=c99 -O1 -w -fsanitize=address -Ibuild/gen -Ifirmware/hal \
         "tests/${component}_test.c" -o "build/smk37-tests/${component}"
     "build/smk37-tests/${component}"

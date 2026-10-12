@@ -31,17 +31,12 @@ the current implementation or publish.
   masking the original error. Recover the original failure and rerun; do not
   infer a browser-audio pass or a specific product defect from this result.
 
-- [ ] **TRS OFF leaves a held FM-1 note sounding (Test21).** On 2026-10-10 the
-  owner confirmed that switching TRS OUT OFF with the cable connected does not
-  stop a held receiver note. Chords, sustain and pitch otherwise worked; mod
-  remains inconclusive. Root cause unknown. The owner explicitly deferred repair
-  to continue sample/storage testing. No shutdown fix is included. See
-  [Test21 hardware results](smk37/TEST21.md#hardware-follow-up).
-
-- [ ] **Review saving TRS OUT across power cycles.** The owner confirmed Test21
-  restarts with TRS OFF and requested recording this for later. This is the
-  current intentional startup behavior, not evidence of a failed settings write.
-  Decide and implement the desired persistence in a later round.
+- [x] **TRS cleanup and preference persistence implemented in 0.9.23.**
+  Ported from Sloop with explicit Note Off and idle settings saves. Host tests
+  pass; physical-device confirmation is still pending.
+- [x] **32-slot user preset storage implemented in 0.9.23.** Legacy migration,
+  unknown-region fallback and interrupted writes covered by host tests.
+  See [release evidence](smk37/RELEASE_0.9.23.md) for pending hardware checks.
 
 - [ ] **Finish user-sample persistence validation.** USR1 test upload and playback
   were reported successful, but the post-restart check was inconclusive while

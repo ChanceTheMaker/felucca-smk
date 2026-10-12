@@ -15,9 +15,9 @@ static uint32_t smk37_storage_confirm_at;
 static uint8_t smk37_storage_confirm;
 static char smk37_name[13];
 static volatile uint8_t smk37_prefs_request,smk37_rename_request;
-static uint8_t smk37_user_used;
-static char smk37_user_names[8][13];
-static void smk37_user_name(unsigned k,char *out){str_cpy(out,k<8 && (smk37_user_used&(1u<<k))?smk37_user_names[k]:"",24);}
+static uint32_t smk37_user_used;
+static char smk37_user_names[SMK37_UP_SLOTS][13];
+static void smk37_user_name(unsigned k,char *out){str_cpy(out,k<smk37_user_capacity && (smk37_user_used&(1u<<k))?smk37_user_names[k]:"",24);}
 static const char *const smk37_groups[]={"SOUND","MODULATION","EFFECTS","SEQUENCER","PERFORMANCE","SAVE / PRESETS","SYSTEM","DIAGNOSTICS"};
 static const uint8_t smk37_group_pages[8][12]={
  {0,1,2,SMK37_OP_PAGE,SMK37_OPENV_PAGE,SMK37_OP2_PAGE,SMK37_SLICE_PAGE,3,11,12,255},
@@ -70,14 +70,14 @@ static void smk37_sound_swap(void){
     fm6_set_patch(k,s->fm6);fm6_adopt(k);smk37_sound_undo.state=now;smk37_sound_undo.gesture=0xfffe;
     ui_message("SOUND UNDO / REDO");
 }
-static const char *const smk37_pref_names[]={"PALETTE","BOLD FONT","MIDI MONITOR","KNOB ACCEL","BPM LOCK","HOLD TIME","HOME VIEW","SCREEN OFF","HELP HINTS","LED LEVEL","ANIMATION","FX LATCH","SCOPE","USB LEVEL","CLICK","CLICK LEVEL","COUNT-IN","RESTORE LAST","STYLE","LARGE","STEP PREVIEW","SPEAKER EQ"};
-#define SMK37_PREF_COUNT 22u
+static const char *const smk37_pref_names[]={"PALETTE","BOLD FONT","MIDI MONITOR","KNOB ACCEL","BPM LOCK","HOLD TIME","HOME VIEW","SCREEN OFF","HELP HINTS","LED LEVEL","ANIMATION","FX LATCH","SCOPE","USB LEVEL","CLICK","CLICK LEVEL","COUNT-IN","RESTORE LAST","STYLE","LARGE","STEP PREVIEW","SPEAKER EQ","TRS OUT"};
+#define SMK37_PREF_COUNT 23u
 static unsigned smk37_pref_get(unsigned r){switch(r){
  case 0:return smk37_palette;case 1:return smk37_bold;case 2:return monitor_mode;case 3:return smk37_accel;case 4:return smk37_bpm_lock;
- case 5:return smk37_hold;case 6:return smk37_home;case 7:return smk37_screen_off;case 8:return smk37_help;case 9:return smk37_led_level;case 10:return smk37_animation;case 11:return perf_latch_on;case 12:return scope_mix;case 13:return fx_usb_fixed;case 14:return click_mode;case 15:return click_lvl;case 16:return cin_bars;case 17:return smk37_restore_last;case 18:return smk37_style;case 19:return smk37_large;case 20:return smk37_step_preview;case 21:return fx_lowcut;default:return 0;}}
+ case 5:return smk37_hold;case 6:return smk37_home;case 7:return smk37_screen_off;case 8:return smk37_help;case 9:return smk37_led_level;case 10:return smk37_animation;case 11:return perf_latch_on;case 12:return scope_mix;case 13:return fx_usb_fixed;case 14:return click_mode;case 15:return click_lvl;case 16:return cin_bars;case 17:return smk37_restore_last;case 18:return smk37_style;case 19:return smk37_large;case 20:return smk37_step_preview;case 21:return fx_lowcut;case 22:return smk37_trs_enabled;default:return 0;}}
 static void smk37_pref_set(unsigned r,unsigned v){switch(r){
  case 0:smk37_palette=v%23;break;case 1:smk37_bold=!!v;break;case 2:monitor_mode=v%3;break;case 3:smk37_accel=!!v;break;case 4:smk37_bpm_lock=!!v;break;
- case 5:smk37_hold=v%4;break;case 6:smk37_home=v%2;break;case 7:smk37_screen_off=v%5;break;case 8:smk37_help=!!v;break;case 9:smk37_led_level=v%9;break;case 10:smk37_animation=!!v;break;case 11:perf_latch_on=!!v;if(!v)perf_latched=0;break;case 12:scope_mix=!!v;break;case 13:fx_usb_fixed=!!v;break;case 14:click_mode=v%3;break;case 15:click_lvl=v%3;break;case 16:cin_bars=v%3;break;case 17:smk37_restore_last=!!v;break;case 18:smk37_style=!!v;break;case 19:smk37_large=!!v;break;case 20:smk37_step_preview=!!v;if(!v)aud_req=0;break;case 21:fx_lowcut=v%3;break;}}
+ case 5:smk37_hold=v%4;break;case 6:smk37_home=v%2;break;case 7:smk37_screen_off=v%5;break;case 8:smk37_help=!!v;break;case 9:smk37_led_level=v%9;break;case 10:smk37_animation=!!v;break;case 11:perf_latch_on=!!v;if(!v)perf_latched=0;break;case 12:scope_mix=!!v;break;case 13:fx_usb_fixed=!!v;break;case 14:click_mode=v%3;break;case 15:click_lvl=v%3;break;case 16:cin_bars=v%3;break;case 17:smk37_restore_last=!!v;break;case 18:smk37_style=!!v;break;case 19:smk37_large=!!v;break;case 20:smk37_step_preview=!!v;if(!v)aud_req=0;break;case 21:fx_lowcut=v%3;break;case 22:smk37_trs_enabled=SMK37_ENABLE_TRS&&!!v;break;}}
 static unsigned smk37_pref_max(unsigned r){return r==0?22:r==2 || r==21 || (r>=14 && r<=16)?2:r==5?3:r==7?4:r==9?8:1;}
 static void smk37_pref_format(unsigned r,char *s){unsigned v=smk37_pref_get(r);
     if(r==0){str_cpy(s,UI_PALETTES[v%UI_NPALETTES].name,24);return;}
@@ -95,7 +95,7 @@ static void smk37_pref_format(unsigned r,char *s){unsigned v=smk37_pref_get(r);
     if(r==9){fmt_int(s,v);return;}str_cpy(s,v?"ON":"OFF",24);
 }
 static int smk37_browser_valid(unsigned e,unsigned p){
-    if(e==NENGINES){if(p>=8 || !(smk37_user_used&(1u<<p)))return 0;}
+    if(e==NENGINES){if(p>=smk37_user_capacity || !(smk37_user_used&(1u<<p)))return 0;}
     else {if(e>=NENGINES || e==ENGI_DIGITAL || p>=ENGINES[e]->npresets)return 0;
         if(ENGINES[e]->presets==SMP_PRESET_TABLE && p<SMP_NSETS && SMP_SET_ORIG[p]!=p)return 0;}
     return !smk37_browser_fav || favorite_has(e,p);
@@ -161,7 +161,7 @@ static void smk37_slice_edit(unsigned action,int direction){
 }
 static int smk37_workflow_turn(unsigned e,int d){
     if(e<4)return 0;unsigned c=e-4;
-    if(smk37_page==33 && c>=2){if(c==2){smk37_trs_enabled=SMK37_ENABLE_TRS&&d>0;ui_message(SMK37_ENABLE_TRS?"TRS OUT / USB UNCHANGED":"TRS NOT ENABLED IN BUILD");}return 1;}
+    if(smk37_page==33 && c>=2){if(c==2){smk37_trs_enabled=SMK37_ENABLE_TRS&&d>0;smk37_prefs_request=1;ui_message(SMK37_ENABLE_TRS?"TRS OUT / USB UNCHANGED":"TRS NOT ENABLED IN BUILD");}return 1;}
     if(smk37_page==SMK37_PRESET_PAGE && c==3){smk37_name_begin();smk37_open(SMK37_NAME_PAGE);return 1;}
     switch(smk37_page){
     case SMK37_NAV_PAGE:

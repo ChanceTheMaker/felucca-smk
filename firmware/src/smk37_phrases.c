@@ -10,10 +10,10 @@ static int seq_is_empty(const track_t *t)
     return 1;
 }
 /* Compact read-only mirror published with preset names; panel never reads flash. */
-static struct {uint8_t note[16],flags[16],used,grid;int16_t timing[4];char name[13];} smk37_user_phrase[8];
-static unsigned smk37_phrase_count(void){unsigned n=NPATTERNS;for(unsigned i=0;i<8;++i)n+=smk37_user_phrase[i].used;return n;}
-static unsigned smk37_phrase_slot(unsigned p){if(p<NPATTERNS)return 8;p-=NPATTERNS;for(unsigned i=0;i<8;++i)if(smk37_user_phrase[i].used){if(!p)return i;--p;}return 8;}
-static const char *smk37_phrase_name(unsigned p){unsigned k=smk37_phrase_slot(p);return p<NPATTERNS?PATTERNS[p].name:k<8?smk37_user_phrase[k].name:"EMPTY";}
+static struct {uint8_t note[16],flags[16],used,grid;int16_t timing[4];char name[13];} smk37_user_phrase[SMK37_UP_SLOTS];
+static unsigned smk37_phrase_count(void){unsigned n=NPATTERNS;for(unsigned i=0;i<smk37_user_capacity;++i)n+=smk37_user_phrase[i].used;return n;}
+static unsigned smk37_phrase_slot(unsigned p){if(p<NPATTERNS)return SMK37_UP_SLOTS;p-=NPATTERNS;for(unsigned i=0;i<smk37_user_capacity;++i)if(smk37_user_phrase[i].used){if(!p)return i;--p;}return SMK37_UP_SLOTS;}
+static const char *smk37_phrase_name(unsigned p){unsigned k=smk37_phrase_slot(p);return p<NPATTERNS?PATTERNS[p].name:k<smk37_user_capacity?smk37_user_phrase[k].name:"EMPTY";}
 static uint8_t smk37_phrase;
 static void load_grid16(track_t *t, const uint8_t *hit, const uint8_t *acc)
 {
@@ -55,7 +55,7 @@ static void load_pat16(track_t *t, const uint8_t *note, const uint8_t *flags)
 
 static void smk37_phrase_load(void){
     track_t *t=TSEL;unsigned k=trk_index(t),user=smk37_phrase_slot(smk37_phrase);uint32_t sig=steps_sig(t);
-    if(smk37_phrase>=NPATTERNS && user>=8){ui_message("PHRASE EMPTY");return;}
+    if(smk37_phrase>=NPATTERNS && user>=smk37_user_capacity){ui_message("PHRASE EMPTY");return;}
     if(chain.running || chain.armed || song.rec){ui_message("STOP SONG / RECORD FIRST");return;}
     /* Same upstream safeguard for replacing edited notes. Confirmation is
      * bound to track, phrase and pattern signature, expires, and has undo. */

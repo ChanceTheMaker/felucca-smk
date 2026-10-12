@@ -6,6 +6,8 @@
  * save region is part of this range. Four slots, each with A/B sector commits. */
 #define SMK37_STORE_LO 0xeb000u
 #define SMK37_STORE_HI 0xf3000u
+/* Additional preset object only, excluding all sample and calibration sectors. */
+#define SMK37_EXPANDED_RANGE(a,n) ((uint32_t)(a)>=0xb1000u && (uint32_t)(a)<0xb7000u && (uint32_t)(n)>0u && (uint32_t)(n)<=0xb7000u-(uint32_t)(a))
 /* Separate noncontiguous preset A/B sectors, opt-in at build and runtime. */
 #define SMK37_PRESET_A 0xf3000u
 #define SMK37_PRESET_B 0xfe000u

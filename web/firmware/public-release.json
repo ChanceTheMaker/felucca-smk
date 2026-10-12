@@ -1,10 +1,10 @@
 {
   "public": true,
-  "version": "Felucca SMK 0.9.22 Beta",
-  "product": "SMK-37_922",
-  "app": "felucca-smk-0.9.22-app.bin",
-  "bytes": 413832,
-  "sha256": "0e7961ffc99554e23326dfeb8d4ab56fe142878a05c3d51360f0eebd55076282",
+  "version": "Felucca SMK 0.9.23 Beta",
+  "product": "SMK-37_923",
+  "app": "felucca-smk-0.9.23-app.bin",
+  "bytes": 415940,
+  "sha256": "9263b5924b747d87a475cd095b1a44dde7faa3e0d69407eb14099f5e01dbeee6",
   "supported_models": [
     "SMK-37 Pro",
     "SMK-37 Elite"
@@ -12,7 +12,12 @@
   "stock_version": "016",
   "upstream_version": "1.5.1",
   "upstream_revision": "a4d7ca2e5d52a4c35e2468401f00d883cadbda03",
-  "hardware_validation": "Development features exercised on Pro through Test21; public first-install path awaits hardware confirmation.",
+  "hardware_validation": "Prior Pro development builds were exercised on device; 0.9.23 expanded storage and TRS changes passed host tests and still require device validation.",
   "source": "https://github.com/ChanceTheMaker/felucca-smk",
-  "license": "GPL-3.0-only"
+  "license": "GPL-3.0-only",
+  "preset_storage": {
+    "slots": 32,
+    "fallback_slots": 8,
+    "migration": "Preserves the original eight-slot bank; uses expanded space only when blank or recognized."
+  }
 }

@@ -30,12 +30,12 @@ def main():
     parser.add_argument('--enable-presets',action='store_true',help='opt-in eight-slot preset sectors; validates both stock reads')
     parser.add_argument('--enable-usb-audio', action='store_true', help='experimental UAC1 recording; requires device timing/host validation')
     parser.add_argument('--enable-samples', action='store_true', help='private sample storage candidate; explicit device initialization required')
-    parser.add_argument('--enable-trs', action='store_true', help='stock-derived TRS MIDI OUT driver; remains OFF until enabled on device')
+    parser.add_argument('--enable-trs', action='store_true', help='TRS MIDI OUT driver; restores explicitly saved preference')
     args = parser.parse_args()
     if args.public_release:
         if args.stock_backups or args.stock_package:
             parser.error('--public-release does not consume private backups or vendor packages')
-        if args.usb_test_number==14:args.usb_test_number=22
+        if args.usb_test_number==14:args.usb_test_number=23
         args.enable_saves=args.enable_presets=args.enable_usb_update=True
         args.enable_usb_audio=args.enable_samples=args.enable_trs=True
     if args.enable_trs and not args.enable_usb_audio:
@@ -99,7 +99,7 @@ def main():
                     str(build.GEN / "ui_fonts.h"), "--preset", "inter-tight"],
                    check=True, cwd=build.SRC)
     flags = [*build.CFLAGS, f"-DSMK37_ENABLE_SAMPLES={int(args.enable_samples)}", f"-DSMK37_ENABLE_USB_AUDIO={int(args.enable_usb_audio)}", "-Ifirmware/hal", "-Ifirmware/src", f"-I{build.GEN.relative_to(build.SRC)}", f"-DSMK37_ENABLE_PRESETS={int(args.enable_presets)}", f"-DSMK37_ENABLE_SAVES={int(args.enable_saves)}", f"-DSMK37_ENABLE_USB_UPDATE={int(args.enable_usb_update)}"]
-    flags += [f'-DSMK37_ENABLE_TRS={int(args.enable_trs)}']
+    flags += [f'-DSMK37_ENABLE_TRS={int(args.enable_trs)}', f'-DSMK37_EXPANDED_PRESETS={int(args.public_release)}']
     build.tc_all(
         ("cc", *flags, "-c", build.FW / "src" / "smk37_app.c", "-o", out / "app.o"),
         ("cc", f"-DSMK37_ENABLE_USB_AUDIO={int(args.enable_usb_audio)}", "-c", build.FW / "smk37_crt0.S", "-o", out / "crt0.o"),
@@ -161,7 +161,7 @@ def main():
         "purpose": "offline linked application integration",
         "image": name, "bytes": len(image), "sha256": hashlib.sha256(image).hexdigest(),
         "entry": hex(sym("_start")), "bss_end": hex(sym("_bss_end")),
-        "pool_end": hex(sym("_pool_end")), "flash_write_support": args.enable_saves, "preset_storage_support": args.enable_presets, "preset_sectors": ["0xf3000", "0xfe000"] if args.enable_presets else [], "usb_update_support": args.enable_usb_update,
+        "pool_end": hex(sym("_pool_end")), "flash_write_support": args.enable_saves, "preset_storage_support": args.enable_presets, "preset_sectors": (["0xb1000..0xb7000", "0xf3000", "0xfe000"] if args.public_release else ["0xf3000", "0xfe000"]) if args.enable_presets else [], "preset_slots": 32 if args.public_release else 8, "usb_update_support": args.enable_usb_update,
         "usb_update_hardware_validated": False,
         "usb_audio_support": args.enable_usb_audio,
         "usb_audio_hardware_validated": False,
@@ -172,14 +172,14 @@ def main():
         "sample_ownership_journal": "0xbf000..0xc0000" if args.enable_samples else None,
         "sample_write_gate": "unit/stock CRCs; explicit resumable initialization; committed ownership; non-contiguous slot bounds; no boot erase" if args.enable_samples else "disabled",
         "trs_midi_output_support": args.enable_trs,
-        "trs_midi_output_default": "OFF",
+        "trs_midi_output_default": "Saved preference; OFF for new/legacy settings",
         "trs_midi_output_hardware_validated": False,
         "usb_audio_rates": [44100, 48000] if args.enable_usb_audio else [],
         "update_product": f"SMK-37_9{args.usb_test_number:02d}", "update_version": update_version,
         "upstream_revision": "a4d7ca2e5d52a4c35e2468401f00d883cadbda03",
         "upstream_version": "1.5.1",
         "prior_unit_evidence": "Test12: owner-confirmed USB update/restart and saved-project retention; earlier tests cover controls, sound, sustain and editor. This new artifact is not device-validated.",
-        "flash_write_gate": (("projects 0xEB000..0xF3000; " + ("presets 0xF3000..0xF4000 and 0xFE000..0xFF000; " if args.enable_presets else "") + "call-free RAM routines; runtime JEDEC/trim/allocation checks") if args.enable_saves else "erase/program entry points disassemble to return -1; read routines are call-free RAM code"),
+        "flash_write_gate": (("projects 0xEB000..0xF3000; " + ("presets 0xB1000..0xB7000 (blank/owned A/B only), legacy 0xF3000..0xF4000 and 0xFE000..0xFF000; " if args.enable_presets else "") + "call-free RAM routines; runtime JEDEC/trim/allocation checks") if args.enable_saves else "erase/program entry points disassemble to return -1; read routines are call-free RAM code"),
         "unverified": [f"Test{args.usb_test_number:02d} startup, audio/control timing and USB update on hardware",
                        "new effects, automation, MIDI learn and metronome on hardware",
                        "Test12-to-FUN10 project migration on hardware",

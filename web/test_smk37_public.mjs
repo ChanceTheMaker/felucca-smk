@@ -44,7 +44,7 @@ if(process.argv.length>2){
   const [pro,elite,manifestPath]=process.argv.slice(2);
   const m=JSON.parse(readFileSync(manifestPath));
   const app=new Uint8Array(readFileSync(resolve(dirname(manifestPath),m.image)));
-  const release={public:true,product:m.update_product,version:'Felucca SMK 0.9.22 Beta',bytes:m.bytes,sha256:m.sha256};
+  const release={public:true,product:m.update_product,version:m.update_version,bytes:m.bytes,sha256:m.sha256};
   mkdirSync('build/public-tests',{recursive:true});
   for(const [name,path] of [['pro',pro],['elite',elite]]){
     const stock=new Uint8Array(readFileSync(path));const original=stock.slice();
