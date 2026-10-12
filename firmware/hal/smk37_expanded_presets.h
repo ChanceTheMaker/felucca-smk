@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 #pragma once
 /* Portable payload only. Requires upstream up_rec_t / favorites_t. No flash IO.
- * Separate from the shipped eight-slot bank until migration is enabled. */
+ * Keeps the original eight-slot payload available for migration and fallback. */
 typedef struct {uint32_t magic;up_rec_t record[8];uint8_t fm6[8][FM6_PACKED];favorites_t favorites;uint8_t prefs[32];} smk37_legacy_presets_t;
 typedef struct {uint32_t magic;up_rec_t record[32];uint8_t fm6[32][FM6_PACKED];favorites_t favorites;uint8_t prefs[32];} smk37_expanded_presets_t;
 _Static_assert(sizeof(smk37_legacy_presets_t)==3116,"Test18/19 bank format");

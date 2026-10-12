@@ -8,7 +8,7 @@ Felucca SMK brings Felucca's synthesis and sequencing to the SMK's 37-key keyboa
 pads, eight knobs, four faders, pitch/mod wheels and display.
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
-[![Version: 0.9.22 Beta](https://img.shields.io/badge/version-0.9.22%20Beta-orange.svg)](firmware/hal/smk37_version.h)
+[![Version: 0.9.23 Beta](https://img.shields.io/badge/version-0.9.23%20Beta-orange.svg)](firmware/hal/smk37_version.h)
 
 [Source](https://github.com/ChanceTheMaker/felucca-smk) |
 [Issues](https://github.com/ChanceTheMaker/felucca-smk/issues) |
@@ -21,7 +21,7 @@ pads, eight knobs, four faders, pitch/mod wheels and display.
 
 ## Project status
 
-The product version is **0.9.22 Beta**, integrating upstream **Felucca 1.5.1**
+The product version is **0.9.23 Beta**, integrating upstream **Felucca 1.5.1**
 at `a4d7ca2e5d52a4c35e2468401f00d883cadbda03`. This is the standalone SMK
 repository. The [FM-1 Salt project](https://github.com/ChanceTheMaker/Felucca)
 is separate; its firmware images are not interchangeable with SMK images.
@@ -32,7 +32,7 @@ is separate; its firmware images are not interchangeable with SMK images.
 | Hardware firmware | Test21 has been exercised on the owner's SMK-37 Pro. Device test records describe the checks and remaining work. |
 | Pro & Elite support | Both models are project targets. Stock-package comparisons cover both; the recorded physical tests are on Pro hardware. |
 | Normal USB updates | Tested on the owner's SMK running the custom updater. Existing private packages are tied to that test device. |
-| General public installation | 0.9.22 public beta installer for official Pro/Elite 016; package and transport tests pass. Stock-hardware first-install confirmation remains pending. |
+| General public installation | 0.9.23 public beta installer for official Pro/Elite 016; package and transport tests pass. Stock-hardware first-install confirmation remains pending. |
 | Website deployment | Studio, Simulator and the homepage deploy through GitHub Pages; hardware firmware publication remains separate. |
 
 The website destination is [Felucca SMK](https://chancethemaker.github.io/felucca-smk/),
@@ -179,14 +179,18 @@ See [panel mapping](docs/smk37/TEST14.md#physical-controls),
 - **Bluetooth:** excluded from this firmware line. The BT button currently
   provides editing/settings navigation.
 
-The device has four project slots and eight user preset slots. Test21 adds
+The device has four project slots and up to 32 user preset slots. Version 0.9.23
+automatically migrates the existing eight-slot bank in memory, retaining the original
+flash copy. Expansion is enabled only when its reserved region is blank or contains
+a recognized preset bank; otherwise the original eight slots remain available.
+The first successful save commits the expanded bank. Test21 adds
 **three 80 KiB user sample slots**, subject to format/metadata overhead and
 validated storage initialization. Initializing them replaces stock sample data
 and requires explicit confirmation. Sample uploading and USR1 playback were
 reported working; the after-restart check still needs completion.
 
 Manual slice markers need reserved space at the end of a sample slot. Full
-archive backup/restore, a 32-preset device bank and an independent writable FM6
+archive backup/restore and an independent writable FM6
 voice bank are not currently integrated. Browser exports are not full flash
 backups. See [sample storage and MIDI details](docs/smk37/TEST21.md).
 
@@ -324,11 +328,14 @@ behavior, event definitions and reporting limits.
 
 ## Known issues and remaining work
 
-- **TRS shutdown:** disabling TRS OUT while holding a note left the receiving
-  FM-1 sounding during testing. Release keys and sustain and let notes stop
-  before disabling output. The shutdown fix is deferred.
-- **TRS persistence:** output starts OFF after a power cycle. Saving this choice
-  is deferred; it is not currently a persistent preference.
+- **0.9.23 device checks:** the new 32-slot migration, TRS preference persistence,
+  and held-note cleanup passed host tests; physical-device checks remain.
+- **TRS shutdown:** now sends sustain-off, channel panic and explicit Note Off
+  messages for transmitted notes before stopping the UART. A disconnected cable
+  cannot carry this cleanup; stop notes before unplugging.
+- **TRS persistence:** TRS OUT is saved when controls are idle and restored on
+  restart. New/legacy settings default to OFF. Release keys and pedal and stop
+  playback before expecting the save to complete.
 - **Modulation over TRS:** the audible result was inconclusive in the device test.
 - **Samples:** repeat the persistence check through the SMK's own audio output
   and inspect the slot in Studio after restart.
@@ -336,7 +343,7 @@ behavior, event definitions and reporting limits.
 - **FM-1 parity:** some performance hold layers, chord-entry preferences and
   display details still differ. FM-1 key lighting has no matching hardware
   beneath the SMK piano keys.
-- **Storage:** full archives, the expanded device preset bank and independent
+- **Storage:** full archives and an independent
   FM6 bank remain separate work.
 - **Public installer:** complete broader-unit validation and the stock-first-install
   workflow before publishing general firmware packages.

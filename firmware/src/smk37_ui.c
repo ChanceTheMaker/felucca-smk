@@ -221,7 +221,7 @@ static void smk37_turn(unsigned encoder, int direction)
             if(encoder==4){do{smk37_tool=smk37_wrap(smk37_tool,direction,12);}while(smk37_tool==7);}
             if(encoder==5)smk37_lane=smk37_wrap(smk37_lane,direction,NLANE);return;
         }
-        if(smk37_page==SMK37_PRESET_PAGE){if(encoder==4)smk37_user_slot=smk37_wrap(smk37_user_slot,direction,8);return;}
+        if(smk37_page==SMK37_PRESET_PAGE){if(encoder==4)smk37_user_slot=smk37_wrap(smk37_user_slot,direction,smk37_user_capacity);return;}
         if(smk37_page==SMK37_PERFORM_PAGE){perf_k[encoder-4]=clamp(perf_k[encoder-4]+direction,encoder==4?-100:0,100);return;}
         if(smk37_page==SMK37_AUTOMATION_PAGE){
             if(encoder==4)smk37_edit_step=smk37_wrap(smk37_edit_step,direction,NSTEP);

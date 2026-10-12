@@ -68,7 +68,7 @@
 /* Pure arithmetic: RAM flash routines must never call an XIP helper. */
 #define FL_RANGE_OK(off,n) (SMK37_ENABLE_SAVES && (((uint32_t)(off)>=SMK37_STORE_LO && \
     (uint32_t)(off)<SMK37_STORE_HI && (uint32_t)(n)>0 && (uint32_t)(n)<=SMK37_STORE_HI-(uint32_t)(off)) || \
-    (SMK37_ENABLE_PRESETS && SMK37_PRESET_RANGE(off,n)) || SMK37_SAMPLE_WRITE_OK(off,n)))
+    (SMK37_ENABLE_PRESETS && (SMK37_PRESET_RANGE(off,n) || (SMK37_EXPANDED_PRESETS && SMK37_EXPANDED_RANGE(off,n)))) || SMK37_SAMPLE_WRITE_OK(off,n)))
 #if SMK37_ENABLE_SAMPLES
 static uint8_t smk37_samples_formatting;
 #define SMK37_SAMPLE_WRITE_OK(off,n) (((smk37_samples_owned || smk37_samples_formatting) && SMK37_SAMPLE_RANGE(off,n)) || (smk37_samples_formatting && SMK37_SAMPLE_JOURNAL_RANGE(off,n)))
@@ -283,13 +283,13 @@ static int smk37_storage_read(uint32_t off,void *dst,uint32_t n)
 #if SMK37_ENABLE_SAMPLES
     if(SMK37_SAMPLE_RANGE(off,n)||SMK37_SAMPLE_JOURNAL_RANGE(off,n))return smk37_flash_read_raw(off,dst,n);
 #endif
-    return (smk37_store_range(off,n)||(SMK37_ENABLE_PRESETS && SMK37_PRESET_RANGE(off,n)))?smk37_flash_read_raw(off,dst,n):-1;
+    return (smk37_store_range(off,n)||(SMK37_ENABLE_PRESETS && (SMK37_PRESET_RANGE(off,n) || (SMK37_EXPANDED_PRESETS && SMK37_EXPANDED_RANGE(off,n)))))?smk37_flash_read_raw(off,dst,n):-1;
 }
 static int smk37_storage_erase(uint32_t off)
 {
     if(!SMK37_ENABLE_SAVES || !smk37_storage_writable || !FL_RANGE_OK(off,4096) || (off&4095))return -1;
     memset(smk37_dma,0,sizeof smk37_dma);
-    return fl_erase4k(off,0);
+    uint32_t took_us;return fl_erase4k(off,&took_us);
 }
 static int smk37_storage_program(uint32_t off,const void *src,uint32_t n)
 {

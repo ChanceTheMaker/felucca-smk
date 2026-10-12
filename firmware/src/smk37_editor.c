@@ -103,7 +103,7 @@ static unsigned smk37_editor_presets(unsigned cmd,const uint8_t *a,unsigned na){
         if (na < 2u)
             return 0;
         s0 = a[0];
-        unsigned total=smk37_up_ready?SMK37_UP_SLOTS:0;
+        unsigned total=smk37_up_ready?smk37_user_capacity:0;
         cnt = a[1] > 16u ? 16u : a[1];
         if (s0 >= total)
             cnt = 0;
@@ -132,7 +132,7 @@ static unsigned smk37_editor_presets(unsigned cmd,const uint8_t *a,unsigned na){
         char nm[13] = {0};
         const up_rec_t *r;
         uint32_t u;
-        if (na != 1u || a[0] >= SMK37_UP_SLOTS)
+        if (na != 1u || a[0] >= smk37_user_capacity)
             return 0;
         r = (&smk37_up.record[a[0]]);
         u = (uint32_t)smk37_up_used(a[0]);
@@ -162,7 +162,7 @@ static unsigned smk37_editor_presets(unsigned cmd,const uint8_t *a,unsigned na){
         if (na < 1u)
             return 0;
         rc = (uint32_t)up_parse(a, na, &r, &slot);
-        if (!rc && slot>=SMK37_UP_SLOTS)rc=1;
+        if (!rc && slot>=smk37_user_capacity)rc=1;
         if (!rc && !smk37_up_idle())
             rc = 2;
         if (!rc) {
@@ -183,7 +183,7 @@ static unsigned smk37_editor_presets(unsigned cmd,const uint8_t *a,unsigned na){
             return 0;
         for (n0 = 0; 1u + n0 < na && a[1 + n0] && n0 < 13u; n0++)
             ;
-        if (a[0] < SMK37_UP_SLOTS && (!n0 || up_name_ok(a + 1, n0)) &&
+        if (a[0] < smk37_user_capacity && (!n0 || up_name_ok(a + 1, n0)) &&
             (1u + n0 == na || (2u + n0 == na && !a[1u + n0]))) {   /* "" = automatic name */
             for (i = 0; i < n0; i++)
                 nm[i] = (char)a[1 + i];
@@ -199,13 +199,13 @@ static unsigned smk37_editor_presets(unsigned cmd,const uint8_t *a,unsigned na){
         if (na < 1u)
             return 0;
         smk37_ed_byte(a[0]);
-        smk37_ed_byte(a[0] < SMK37_UP_SLOTS && !smk37_up_load(a[0]) ? 0u : 1u);
+        smk37_ed_byte(a[0] < smk37_user_capacity && !smk37_up_load(a[0]) ? 0u : 1u);
         break;
     case 21:
         if (na < 1u)
             return 0;
         smk37_ed_byte(a[0]);
-        smk37_ed_byte(a[0] >= SMK37_UP_SLOTS ? 1u : !smk37_up_idle() || smk37_up_put(a[0], 0) ? 2u : 0u);
+        smk37_ed_byte(a[0] >= smk37_user_capacity ? 1u : !smk37_up_idle() || smk37_up_put(a[0], 0) ? 2u : 0u);
         break;
     default:return 0;
     }return smk37_ed_finish();
