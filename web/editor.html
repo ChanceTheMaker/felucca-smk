@@ -2773,7 +2773,7 @@ $("mock").hidden = !MOCK || BROWSER_AUDIO;
 let browserSynth = null;
 const audioModule = import('./audio/smk-browser.js');
 import('./midi-input.js').then(({mountMIDIInput})=>mountMIDIInput({container:$('browser-session'),getSynth:()=>browserSynth,active:()=>BROWSER_AUDIO,enableAudio:async()=>{if(!BROWSER_AUDIO)throw Error('Select Browser mode first');if(!dev)await connect();if(!browserSynth?.node)throw Error('Enable browser audio first');await browserSynth.context.resume();}}));
-const simulatorModule = import('./smk-simulator.js');
+const simulatorModule = import('./smk-simulator.js?pads=1');
 let simulator = null;
 const deviceText = Object.fromEntries(I18N.languages.map(({code:l}) => [l, {...TEXT[l]}]));
 function renderAudioMode() {

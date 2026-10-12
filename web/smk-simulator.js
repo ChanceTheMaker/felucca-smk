@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Browser panel for the native Felucca SMK input and LCD adapter.
 import {createSMKTour} from './smk-tour.js';
-import {createKeyboardGlide} from './keyboard-glide.js';
+import {createPanelGlide} from './panel-glide.js?v=1';
 export function createSMKSimulator(host, synth) {
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n;};
   const toolbar=el('div','sim-toolbar'),title=el('strong','','SMK-37 · Felucca SMK');
@@ -38,13 +38,10 @@ export function createSMKSimulator(host, synth) {
   const send=(kind,id,value)=>synth.panel(kind,id,value);
   function release(owner){const v=owners.get(owner);if(!v)return;owners.delete(owner);const n=counts.get(v.key)-1;if(n)counts.set(v.key,n);else{counts.delete(v.key);send(v.kind,v.id,0);}v.button?.setAttribute('aria-pressed',String(n>0));}
   function press(owner,kind,id,value,button){if(owners.has(owner))return;const key=kind+':'+id,n=counts.get(key)||0;counts.set(key,n+1);owners.set(owner,{key,kind,id,button});if(!n)send(kind,id,value);button?.setAttribute('aria-pressed','true');}
-  const glide=createKeyboardGlide((x,y)=>{const key=document.elementFromPoint(x,y)?.closest('.sim-key');return key&&host.contains(key)?key:null;},
-    (id,key)=>{release('p'+id);if(key)press('p'+id,2,+key.dataset.key,100,key);},id=>release('p'+id));
+  const glide=createPanelGlide(host,press,release);
   function wire(button,kind,id,velocity=1){
     button.type='button';button.setAttribute('aria-pressed','false');
-    button.onpointerdown=e=>{if(e.button&&e.pointerType==='mouse')return;e.preventDefault();button.focus({preventScroll:true});button.setPointerCapture(e.pointerId);if(kind===2)glide.start(e.pointerId,e.clientX,e.clientY);else press('p'+e.pointerId,kind,id,velocity,button);};
-    if(kind===2)button.onpointermove=e=>{if(e.pointerType==='mouse'&&!(e.buttons&1)){glide.end(e.pointerId);return;}glide.move(e.pointerId,e.clientX,e.clientY);};
-    for(const name of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(name,e=>{if(kind===2)glide.end(e.pointerId);else release('p'+e.pointerId);});
+    glide.bind(button,kind,id,velocity);
     button.onkeydown=e=>{if(['Space','Enter'].includes(e.code)){e.preventDefault();if(!e.repeat)press('k'+e.code,kind,id,velocity,button);}};
     button.onkeyup=e=>{if(['Space','Enter'].includes(e.code)){e.preventDefault();release('k'+e.code);}};
     button.onblur=()=>{release('kSpace');release('kEnter');};
@@ -61,7 +58,7 @@ export function createSMKSimulator(host, synth) {
     dial.onkeydown=e=>{const n={ArrowUp:1,ArrowRight:1,ArrowDown:-1,ArrowLeft:-1}[e.key];if(n){e.preventDefault();turn(n*(e.shiftKey?10:1));}};
     dial.addEventListener('wheel',e=>{if(document.activeElement!==dial)return;e.preventDefault();turn(e.deltaY<0?1:-1);},{passive:false});box.append(label,dial,hint);knobs.append(box);
   });
-  const padGrid=el('div','sim-pads');for(let i=0;i<16;i++){const b=el('button','sim-pad',String(i+1));b.setAttribute('aria-label',`Pad ${i+1}`);wire(b,3,i,100);pads.push(b);padGrid.append(b);}
+  const padGrid=el('div','sim-pads');for(let i=0;i<16;i++){const b=el('button','sim-pad',String(i+1));b.setAttribute('aria-label',`Pad ${i+1}`);b.dataset.pad=String(i);wire(b,3,i,100);pads.push(b);padGrid.append(b);}
   center.append(knobs,padGrid);
   const faderRow=el('div','sim-faders');for(let i=0;i<4;i++){const label=el('label','sim-fader',`F${i+1}`),f=el('input');f.type='range';f.min=0;f.max=1023;f.value=0;f.setAttribute('aria-label',`Fader ${i+1}`);f.oninput=()=>send(4,i,+f.value);label.append(f);faders.push(f);faderRow.append(label);}right.append(faderRow);
   const bankRow=el('div','sim-banks'),panel=el('div','sim-buttons');
