@@ -1,0 +1,14 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Restore original firmware</title><link rel="stylesheet" href="style.css"></head>
+<body><main><a id="back" href="../">Back to installer</a><p class="eyebrow">RETURN TO STOCK</p><h1>Restore original firmware</h1>
+<p>Return your instrument to its official M-VAVE firmware over normal USB. Choose the exact physical model: Pro and Elite files are different.</p>
+<ol><li>Back up any sounds or projects you want to keep.</li><li>Connect only the target instrument directly by USB. Close Studio, Simulator and other MIDI apps.</li><li>Prepare the official file, confirm the notice, then restore. Keep power and USB connected until the original firmware is confirmed.</li></ol>
+<section><label for="model">Physical device model</label><select id="model"></select>
+<details><summary>Use an official file from this computer</summary><p>SMK Pro / Elite 016 downloads automatically. For FM-1, select the unmodified official V15 <code>FM-1.fwsc</code> from M-VAVE. Files are checked locally and are not uploaded.</p><input id="file" type="file" accept=".fwsc" aria-label="Official firmware file"></details>
+<button id="prepare">Prepare original firmware</button><p id="status" role="status" aria-live="polite">Loading restore tools...</p>
+<label class="notice"><input id="ack" type="checkbox"> I selected my exact model and backed up what I need. Restoring replaces the current firmware. Custom projects and settings may not open and may be overwritten by the original firmware.</label>
+<button id="restore" disabled>Restore original firmware</button><p id="browser-note">USB restoration requires desktop Chrome or Edge. No firmware operation runs automatically.</p>
+<details><summary>Restore log</summary><pre id="log" aria-live="polite"></pre><button id="save-log">Save log</button></details></section>
+<p class="fine">The custom SMK loader writes only the official application region, retaining the bootloader and device calibration. This does not recover old factory presets or replace a backup. Unsupported older custom builds are refused. A power interruption during programming may require hardware recovery.</p>
+</main><script type="module" src="app.js?v=stock1"></script></body></html>

@@ -1,3 +1,9 @@
+## Original firmware restore - 2026-10-12
+
+Website-only stock-return flow added; current custom firmware release and pinned
+upstream revision are unchanged. [Restore behavior and evidence](STOCK_RESTORE.md).
+This is a fork website change, not an upstream contribution.
+
 ## Doom SMK installer compatibility - 2026-10-12
 
 The website now recognizes Doom-SMK-37 and its active RAM loader, using

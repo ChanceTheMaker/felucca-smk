@@ -30,6 +30,10 @@ def main():
             shutil.copy2(source, out / 'audio' / source.name)
     for name in ('LICENSE', 'LICENSING.md'):
         shutil.copy2(ROOT / name, out / name)
+    (out / 'restore-stock').mkdir()
+    for asset in (web / 'restore-stock').iterdir():
+        if asset.suffix in ('.html', '.css', '.js'):
+            shutil.copy2(asset, out / 'restore-stock' / asset.name)
     # Explicit release allowlist: never stage private candidates or vendor files.
     release_path=web/'firmware/public-release.json'
     if release_path.exists():
