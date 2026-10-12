@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {pack7,unpack7} from './fm1ota.js?v=elite-handoff2';
+import {pack7,unpack7} from './fm1ota.js?v=progress1';
 import {QUERY} from './midi-diagnostics.js?v=elite-handoff2';
 import {buildStockHandoffPackage,smkLogicalImage} from './smk37-package.js?v=elite-handoff2';
 import {serveLoaderOnly,captureHandoff,diagnoseStockHandoff} from './smk37-handoff-diagnostics.js?v=elite-handoff2';

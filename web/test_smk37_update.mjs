@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
-import {parsePackage,crc32,HEADER,LO,HI,installSmk} from './smk37-update.js';
-import {Updater} from './fm1ota.js?v=smk-flow-r1';
+import {parsePackage,crc32,HEADER,LO,HI,installSmk} from './smk37-update.js?v=progress1';
+import {Updater} from './fm1ota.js?v=progress1';
 globalThis.crypto??=webcrypto;
 const bytes=new Uint8Array(HEADER+HI-LO),v=new DataView(bytes.buffer),enc=new TextEncoder();
 bytes.set(enc.encode('SMK37-SALT-USB1'));

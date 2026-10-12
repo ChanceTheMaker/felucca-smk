@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import {Updater} from './transport.js';
+import {Updater} from './transport.js?v=progress1';
 import {validateStockPackage,sha256hex} from './fm1pkg.js';
 import {buildSmkStock} from './package-smk.js';
 const prepared=new WeakSet();

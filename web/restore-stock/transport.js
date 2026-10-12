@@ -1,3 +1,4 @@
+import {createTransferCounter,reportProgress} from '../update-progress.js?v=progress1';
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
 //
@@ -233,6 +234,8 @@ export class Updater {
   // serve read requests until the device asks for one of the finish addresses; stops early
   // when the port disappears (lost: true) instead of waiting out idleMs
   async serve(link, image, finishAddr, idleMs, onProgress) {
+    const count = createTransferCounter(image.length), writing = finishAddr === 0xF0000000;
+    reportProgress({phase:writing?'transfer':'loader',bytes:0,total:image.length});
     let served = 0, last = Date.now();
     for (;;) {
       const pkt = await link.read(1000);
@@ -246,7 +249,10 @@ export class Updater {
       last = Date.now();
       if (r.addr === 0xE0000000 || r.addr === 0xF0000000) {
         link.send(response(r.addr, [...new TextEncoder().encode("success"), 0]));
-        if (r.addr === finishAddr) return { served, finished: true };
+        if (r.addr === finishAddr) {
+          reportProgress({phase:writing?'reboot':'loader'});
+          return { served, finished: true };
+        }
         continue;
       }
       if (r.len > MAXDATA || r.addr + r.len > image.length) throw fail("badreq", `bad request ${r.addr.toString(16)}+${r.len}`);
@@ -255,6 +261,7 @@ export class Updater {
         return { served, finished: false, lost: true };
       }
       served++;
+      if (writing) reportProgress({phase:'transfer',...count(r.addr,r.len)});
       if (onProgress) onProgress(served, r.addr);
     }
   }

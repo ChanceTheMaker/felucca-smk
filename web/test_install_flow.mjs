@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import assert from 'node:assert/strict';
-import {Updater} from './fm1ota.js?v=smk-flow-r1';
-import {installStockSmk,installSmk} from './smk37-update.js';
+import {Updater} from './fm1ota.js?v=progress1';
+import {installStockSmk,installSmk} from './smk37-update.js?v=progress1';
 let cfg,sends,serves,confirms,phase,closed;
 const link=()=>({send(){sends++;return true;},async close(){closed++;}});
 const mk=(model,version=16)=>({model,version,text:model+'_'+String(version).padStart(3,'0')});

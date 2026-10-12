@@ -2,8 +2,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {webcrypto} from 'node:crypto';
-import {prepareStock,restoreStock} from './core.js';
-import {Updater} from './transport.js';
+import {prepareStock,restoreStock} from './core.js?v=progress1';
+import {Updater} from './transport.js?v=progress1';
 import {smkLogicalImage} from './package-smk.js';
 import {crc32,HEADER,LO,HI} from './format.js';
 globalThis.crypto??=webcrypto;
