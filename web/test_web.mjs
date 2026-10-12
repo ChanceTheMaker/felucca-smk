@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 import "./test_keyboard.mjs";
 import { logicalImage, productOf } from "./fm1pkg.js";
-import { Updater, pack7, unpack7 } from "./fm1ota.js";
+import { Updater, pack7, unpack7 } from "./fm1ota.js?v=progress1";
 
 let failed = 0;
 const ok = (cond, what) => { console.log(`${what.padEnd(64)} ${cond ? "ok" : "FAIL"}`); if (!cond) failed++; };

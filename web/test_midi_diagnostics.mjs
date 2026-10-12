@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import assert from 'node:assert/strict';
 import {probeMidiIdentity,identityEvidence,midiInventory} from './midi-diagnostics.js';
-import {Updater,pack7} from './fm1ota.js';
+import {Updater,pack7} from './fm1ota.js?v=progress1';
 const QUERY=[0xf0,0,0x32,0x45,0,0,0,0x40,0x7f,0xf7];
 const body=new Uint8Array(34);body.set([0,0x59,0x11]);body.set(new TextEncoder().encode('ota-SMK-37_016'),6);
 const packet=[0xf0,...pack7(body),0xf7];

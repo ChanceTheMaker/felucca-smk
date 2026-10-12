@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import assert from 'node:assert/strict';
-import {Updater,pack7} from './fm1ota.js?v=smk-flow-r1';
+import {Updater,pack7} from './fm1ota.js?v=progress1';
 const query=[0xf0,0x00,0x32,0x45,0x00,0x00,0x00,0x40,0x7f,0xf7];
 function reply(text){const d=new Uint8Array(34);d.set([0,0x59,0x11]);d.set(new TextEncoder().encode(text),6);return [0xf0,...pack7(d),0xf7];}
 class Port extends EventTarget{

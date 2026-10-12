@@ -625,3 +625,7 @@ pending. Private packages stay outside Git and Pages. Fork-only contribution.
 ## Website family navigation — 2026-10-11
 
 Added footer links among SMKLab, Felucca SMK, Sloop SMK and Melodee SMK on the homepage, Studio and simulator. Website-only change; published firmware and protocols remain unchanged. Local link/markup checks pass. No upstream contribution is intended for this branding/navigation change.
+
+## Installer progress bars (2026-10-12)
+
+Website-only fork change. Adds preparation, unique-byte transfer, restart-confirmation and stopped states to installation and factory restore. Repeated/overlapping requests do not inflate progress; 100% requires the existing verified-success path. Published firmware, model checks, flash ranges, loader commands and upstream baseline are unchanged. Offline progress/transport and existing installer/restore tests passed; no device was flashed for this UI change.
