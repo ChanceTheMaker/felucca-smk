@@ -24,7 +24,9 @@ static __attribute__((noinline)) int smku_session(void){
     uint32_t head_crc=SMK37_UNIT_HEAD_CRC,trim_crc=SMK37_UNIT_TRIM_CRC;
 #if SMK37_PUBLIC_BUILD
     head_crc=SMK37_PUBLIC_HEAD_CRC;
-    if(smku_flash_read(0xc1000,smku_current,556) || !smk37_trim_keys_valid(smku_current,556))return -3;
+    if(smku_flash_read(0xc1000,smku_current,SMK37_TRIM_SECTOR_BYTES) ||
+       !smk37_trim_sector_supported(smku_current,SMK37_TRIM_SECTOR_BYTES))return -3;
+    uint32_t trim_sector_crc=smku_crc(smku_current,SMK37_TRIM_SECTOR_BYTES,~0u)^~0u;
     trim_crc=smku_crc(smku_current,556,~0u)^~0u;
 #endif
     if(!smku_header_check(smku_header,head_crc,trim_crc,SMK37_PUBLIC_BUILD))return -2;
@@ -50,6 +52,9 @@ static __attribute__((noinline)) int smku_session(void){
     if(smku_flash_crc(SMKU_LO,SMKU_BYTES,&ok)!=smku_rd(smku_header+40) || !ok)return -12;
     if(smku_flash_crc(0,0x4000,&ok)!=head_crc || !ok ||
        smku_flash_crc(0xc1000,556,&ok)!=trim_crc || !ok)return -15;
+#if SMK37_PUBLIC_BUILD
+    if(smku_flash_crc(0xc1000,SMK37_TRIM_SECTOR_BYTES,&ok)!=trim_sector_crc || !ok)return -15;
+#endif
     /* Final handshake is sent only after whole-application readback. */
     if(smku_read(0xf0000000u,smku_sector,8))return -13;
     return 0;

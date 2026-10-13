@@ -26,7 +26,7 @@ static int smku_read(uint32_t off,uint8_t*p,uint32_t n){
 }
 static int smku_flash_read(uint32_t off,void*p,uint32_t n){assert(off<=sizeof flash && n<=sizeof flash-off);memcpy(p,flash+off,n);return 0;}
 static int smku_flash_erase(uint32_t off){assert(off>=SMKU_LO && off<=SMKU_HI-4096 && !(off%4096));++erases;memset(flash+off,255,4096);return 0;}
-static int smku_flash_prog(uint32_t off,const void*p,uint32_t n){assert(off>=SMKU_LO && off<SMKU_HI && n<=SMKU_HI-off);++programs;if(mode==5)return -1;memcpy(flash+off,p,n);return 0;}
+static int smku_flash_prog(uint32_t off,const void*p,uint32_t n){assert(off>=SMKU_LO && off<SMKU_HI && n<=SMKU_HI-off);++programs;if(mode==5)return -1;memcpy(flash+off,p,n);if(mode==7)flash[0xc1f00]=0;return 0;}
 static void smku_poll(void){}
 static uint32_t smku_flash_id(void){return mode==6?0:0x856014;}
 #include "../firmware/loader/smk37_update_core.c"
@@ -89,6 +89,17 @@ int main(int argc,char **argv){
     setup();put(16,2);put(36,0);seal();flash[100]^=1;
     assert(smku_session()<0&&!erases);
     setup();put(16,2);put(36,1);seal();assert(smku_session()<0&&!erases);
+    /* A wholly blank sector is a supported existing state, never rewritten. */
+    setup();put(16,2);put(36,0);seal();memset(flash+0xc1000,255,4096);
+    memcpy(original,flash,sizeof flash);assert(smku_session()==0);protected_ok();
+    /* Partial erase/corruption stays rejected, including outside 556 bytes. */
+    setup();put(16,2);put(36,0);seal();memset(flash+0xc1000,255,4096);
+    flash[0xc1fff]=0;assert(smku_session()==-3&&!erases);
+    setup();put(16,2);put(36,0);seal();memset(flash+0xc1000,0,4096);
+    assert(smku_session()==-3&&!erases);
+    /* Readback covers the complete calibration sector, including its tail. */
+    setup();put(16,2);put(36,0);seal();mode=7;
+    assert(smku_session()==-15&&erases==1);
 #else
     setup();put(16,2);put(36,0);seal();assert(smku_session()<0&&!erases);
 #endif
