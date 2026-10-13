@@ -1,3 +1,9 @@
+## Felucca SMK 0.9.24 USB repair — 2026-10-12
+
+Selected for authorized publication after Pro recovery, normal-USB reinstall
+and outgoing Melodee update passed. Upstream remains unchanged.
+[Artifact, hardware evidence and limits](SMK_USB_RECOVERY_024.md).
+
 ## Original firmware restore - 2026-10-12
 
 Website-only stock-return flow added; current custom firmware release and pinned

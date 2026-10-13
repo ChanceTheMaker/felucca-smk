@@ -6,7 +6,7 @@
 <script src="locales.js"></script><script src="i18n.js"></script><script src="skin.js"></script>
 <script defer src="site-nav.js?v=smk-simulator"></script>
 <script defer src="analytics.js"></script>
-<script type="module" src="smk-version.js?v=0.9.23"></script>
+<script type="module" src="smk-version.js?v=0.9.24"></script>
 <link rel="stylesheet" href="smk37-landing.css">
 <script defer src="studio-preview.js"></script><script defer src="smk37-landing.js"></script><script defer src="panel-guide.js"></script>
 <style>
@@ -63,7 +63,7 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
   <details class="beta-notes"><summary>Beta status and current limits</summary>
     <p><strong>Confirmed on the Pro test device:</strong> Test12 normal-USB installation, restart and saved-project retention, plus earlier control, sound, sustain and two-way editor checks.</p>
     <p><strong>Through Test21:</strong> Grouped navigation, settings, presets/favorites, FM6 editing, sound and pattern undo, sustained-note monitoring and rolling values are implemented. TRS notes, chords, sustain and pitch, plus a user-sample upload and playback, have been exercised on the Pro test device.</p>
-    <p>Version 0.9.23 remembers TRS OUT after an idle save and sends explicit Note Off messages when disabling output. Keep the MIDI cable connected until notes stop. The new TRS behavior and 32-slot preset migration passed software tests; device checks are still pending. The original eight presets are retained during migration. Expansion uses only blank or recognized storage; unfamiliar data keeps the eight-slot bank available. Sample persistence after restart and longer USB audio testing remain follow-ups. Bluetooth and complete web backups are not enabled. The public beta installer supports official 016 firmware and public Felucca SMK 0.9.22 or later.</p>
+    <p>Version 0.9.24 improves USB updating between SMK firmware. It retains the TRS OUT preference after an idle save and sends explicit Note Off messages when disabling output. Keep the MIDI cable connected until notes stop. The new TRS behavior and 32-slot preset migration passed software tests; device checks are still pending. The original eight presets are retained during migration. Expansion uses only blank or recognized storage; unfamiliar data keeps the eight-slot bank available. Sample persistence after restart and longer USB audio testing remain follow-ups. Bluetooth and complete web backups are not enabled. The public beta installer supports official 016 firmware and public Felucca SMK 0.9.22 or later.</p>
   </details>
 </section>
 <section class="panel-guide" id="guide" data-panel-guide data-section="knobs" aria-labelledby="smk-guide-heading">
@@ -103,4 +103,4 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
 <footer>
 <nav class="smk-family" aria-label="SMK family"><span>Explore the SMK family</span><a href="https://chancethemaker.github.io/smklab/">SMKLab ↗</a><a href="https://chancethemaker.github.io/felucca-smk/">Felucca SMK ↗</a><a href="https://chancethemaker.github.io/sloop-smk/">Sloop SMK ↗</a><a href="https://chancethemaker.github.io/melodee-smk/">Melodee SMK ↗</a></nav>
 Felucca SMK by Chance Roth (<a href="https://github.com/ChanceTheMaker" target="_blank" rel="noopener">@ChanceTheMaker</a>). Based on Felucca by Leo Kuroshita (@kurogedelic), H&uuml;gelton Instruments. GPL-3.0. M-VAVE, FM-1, and SMK-37 are trademarks of their respective owners.</footer>
-</main><script src="smk37-installer-start.js?v=smk-doom-r1"></script></body></html>
+</main><script src="smk37-installer-start.js?v=usb-repair24"></script></body></html>

@@ -1,5 +1,7 @@
 # Felucca SMK
 
+Current release: **0.9.24 Beta**, with repaired USB updating. Pro recovery, normal-USB reinstall, playing and an outgoing Melodee update passed. Elite checks remain pending. [Repair evidence](docs/SMK_USB_RECOVERY_024.md).
+
 **Custom synthesizer firmware, browser Studio and interactive simulator for M-VAVE SMK-37 Pro & Elite.**
 
 By [Chance Roth (@ChanceTheMaker)](https://github.com/ChanceTheMaker), based on
@@ -8,7 +10,7 @@ Felucca SMK brings Felucca's synthesis and sequencing to the SMK's 37-key keyboa
 pads, eight knobs, four faders, pitch/mod wheels and display.
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
-[![Version: 0.9.23 Beta](https://img.shields.io/badge/version-0.9.23%20Beta-orange.svg)](firmware/hal/smk37_version.h)
+[![Version: 0.9.24 Beta](https://img.shields.io/badge/version-0.9.24%20Beta-orange.svg)](firmware/hal/smk37_version.h)
 
 [Source](https://github.com/ChanceTheMaker/felucca-smk) |
 [Issues](https://github.com/ChanceTheMaker/felucca-smk/issues) |

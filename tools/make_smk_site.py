@@ -38,7 +38,7 @@ def main():
     release_path=web/'firmware/public-release.json'
     if release_path.exists():
         release=json.loads(release_path.read_text())
-        if release.get('public') is not True or release.get('app')!='felucca-smk-0.9.23-app.bin':
+        if release.get('public') is not True or release.get('app')!='felucca-smk-0.9.24-app.bin':
             raise ValueError('Unsupported public release manifest')
         app=web/'firmware'/release['app']
         data=app.read_bytes()
