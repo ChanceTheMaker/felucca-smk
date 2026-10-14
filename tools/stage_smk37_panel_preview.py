@@ -29,7 +29,7 @@ release.update(version=m['update_version'], product=m['update_product'],
 (out / 'firmware/public-release.json').write_text(json.dumps(release, indent=2)+'\n', encoding='utf-8')
 for name in ('smk37-installer.js', 'smk-version.js', 'index.html'):
     p = out / name
-    s = p.read_text(encoding='utf-8').replace('SMK-37_923', 'SMK-37_927').replace('0.9.23', '0.9.27')
+    s = p.read_text(encoding='utf-8')
     if name == 'index.html':
         import re
         s = re.sub(r'(<body\b[^>]*>)', r'\1<aside style="padding:16px;text-align:center;background:#ffe1a1;color:#251a07">LOCAL TEST BUILD: 0.9.27 changed-area screen synchronization. Not yet tested on hardware. Installation starts only when you confirm and click Install.</aside>', s, count=1)

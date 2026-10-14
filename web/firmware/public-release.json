@@ -1,10 +1,10 @@
 {
   "public": true,
-  "version": "Felucca SMK 0.9.24 Beta",
-  "product": "SMK-37_924",
-  "app": "felucca-smk-0.9.24-app.bin",
-  "bytes": 416004,
-  "sha256": "10b32af3e02adb2ac2b8ea4c621dd865333fe5090fdb373cb590d04f549d7581",
+  "version": "Felucca SMK 0.9.27 Beta",
+  "product": "SMK-37_927",
+  "app": "felucca-smk-0.9.27-app.bin",
+  "bytes": 420600,
+  "sha256": "eed32575f2143f5a3d611caaf1e22bd5f6424bb7ced9a18ca2a45d83c705d870",
   "supported_models": [
     "SMK-37 Pro",
     "SMK-37 Elite"
@@ -12,13 +12,14 @@
   "stock_version": "016",
   "upstream_version": "1.5.1",
   "upstream_revision": "a4d7ca2e5d52a4c35e2468401f00d883cadbda03",
-  "hardware_validation": "Pro 0.9.24: recovery install with protected-byte readback, boot/playing, normal-USB reinstall and outgoing update to repaired Melodee passed. Expanded preset/TRS regressions passed locally; their separate physical checks and Elite validation remain pending.",
-  "source": "https://github.com/ChanceTheMaker/felucca-smk/tree/v0.9.24-beta",
+  "hardware_validation": "Owner confirmed testing the local 0.9.27 Live Panel candidate on hardware. Release integrates the previously tested 0.9.24 USB updater repair; combined image passes host/package tests. No new Elite hardware confirmation or long-run streaming/audio measurements claimed.",
+  "source": "https://github.com/ChanceTheMaker/felucca-smk/tree/v0.9.27",
   "license": "GPL-3.0-only",
   "preset_storage": {
     "slots": 32,
     "fallback_slots": 8,
     "migration": "Preserves the original eight-slot bank; uses expanded space only when blank or recognized."
   },
-  "source_archive": "https://github.com/ChanceTheMaker/felucca-smk/archive/refs/tags/v0.9.24-beta.zip"
+  "source_archive": "https://github.com/ChanceTheMaker/felucca-smk/archive/refs/tags/v0.9.24-beta.zip",
+  "remote_panel_protocol": 4
 }

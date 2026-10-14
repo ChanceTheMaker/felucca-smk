@@ -36,7 +36,7 @@ def main():
     if args.public_release:
         if args.stock_backups or args.stock_package:
             parser.error('--public-release does not consume private backups or vendor packages')
-        if args.usb_test_number==14:args.usb_test_number=24
+        if args.usb_test_number==14:args.usb_test_number=27
         args.enable_saves=args.enable_presets=args.enable_usb_update=True
         args.enable_usb_audio=args.enable_samples=args.enable_trs=True
     if args.enable_trs and not args.enable_usb_audio:

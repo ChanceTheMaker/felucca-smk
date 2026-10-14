@@ -740,3 +740,5 @@ Both Pro/Elite offline package and updater checks pass. Image: 420536 bytes;
 SHA256 a67fba6360568e49d7f296a515eea7c600fcb35dd071cbbd6afe1f95a92fd342.
 BSS end 0x1c18cdc; pool end unchanged at 0x1c73e58. Hardware sequencer speed
 and audio/control responsiveness under rectangle streaming remain pending.
+
+Publication 0.9.27 (2026-10-14): owner confirmed hardware testing of the local panel candidate and authorized release. Rebased onto fork main 00197c1 to retain factory restore, progress reporting, compatible Doom handoff and repaired Pro calibration/updater handling. The final combined application is 420600 bytes, SHA256 eed32575f2143f5a3d611caaf1e22bd5f6424bb7ced9a18ca2a45d83c705d870. Its screen implementation matches the tested candidate; updater repair is from the prior released 0.9.24. Do not conflate that evidence with a new full test of the combined image on both models. Public identity SMK-37_927, capability 4; Bluetooth remains isolated. README and homepage describe Live Panel, Device Studio, Simulator, Browser Studio and screen-only mode.
