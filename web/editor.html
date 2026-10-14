@@ -173,7 +173,7 @@
 </style>
 <link rel="stylesheet" href="skin.css">
 <link rel="stylesheet" href="interface.css">
-<link rel="stylesheet" href="smk-studio.css">
+<link rel="stylesheet" href="smk-studio.css?panel=4">
 <link rel="stylesheet" href="fonts.css?v=smk2">
 <script src="locales.js"></script>
 <script src="i18n.js"></script>
@@ -194,9 +194,10 @@
     <div class="bar">
       <button id="connect" data-t="connect" data-ic="port_usb_c"></button>
       <div id="audio-mode" class="mode-switch" role="group" aria-label="Sound source" data-i18n-aria-label="site.sound_source">
-        <button id="mode-fm1" type="button" aria-pressed="true">SMK Device</button>
-        <button id="mode-simulator" type="button" aria-pressed="false">SMK Simulator</button>
-        <button id="mode-browser" type="button" aria-pressed="false">Browser Studio</button>
+        <button id="mode-fm1" type="button" aria-pressed="true" title="Mirror and control your connected SMK, including its live screen, knobs and lights."><svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8m-4-4v4m-6-7h3l2-3 2 6 2-3h3"/></svg><span>Live Panel</span></button>
+        <button id="mode-soundboard" type="button" aria-pressed="false" title="Edit sounds and sequences on your connected SMK using grouped studio controls."><svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v5m0 4v9M12 3v10m0 4v4M18 3v3m0 4v11"/><path d="M3 8h6v4H3zm6 5h6v4H9zm6-7h6v4h-6z"/></svg><span>Device Studio</span></button>
+        <button id="mode-simulator" type="button" aria-pressed="false" title="Play a virtual SMK hardware panel with browser audio. No device required."><svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M7 5v14m5-14v14m5-14v14M5 5v7h4V5m6 0v7h4V5"/></svg><span>Simulator</span></button>
+        <button id="mode-browser" type="button" aria-pressed="false" title="Create sounds and sequences with studio controls and browser audio. No device required."><svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 8h20M6 5.5h.01M9 5.5h.01m-3 10h3l2-4 3 7 2-3h2"/></svg><span>Browser Studio</span></button>
       </div>
       <label id="audio-volume-label" hidden><span data-i18n="site.volume">Volume</span> <input id="audio-volume" type="range" min="0" max="100" value="35" aria-label="Browser audio volume" data-i18n-aria-label="site.browser_audio_volume"></label>
       <span id="audio-status" role="status"></span>
@@ -230,6 +231,7 @@
     <input id="session-file" type="file" accept=".json,application/json" hidden>
     <span id="session-status" role="status">Browser sessions stay on this computer.</span>
   </div>
+  <section id="smk-device" hidden aria-label="SMK37 connected hardware view"></section>
   <section id="smk-simulator" hidden aria-label="SMK hardware simulator"></section>
 
   <section class="panel" id="p-sound" data-tab="sound" data-dev hidden>
@@ -537,7 +539,7 @@ const parse = {
       if (o.syncCaps && trailer[r] === 0x52 && trailer[r + 1] === 1) o.ratchet = trailer[r + 2];   /* RATCH: max hits */
     }
     // SMK uses append-only capability tags without claiming unsupported UI/backup commands.
-    if (/SMK37/.test(o.version)) {
+    if (/SMK/i.test(o.version)) {
       for(let p=trailer[0]===16?1:0;p<trailer.length;){
         if(trailer[p+1]!==1)break;
         const tag=trailer[p],v=trailer[p+2];
@@ -545,6 +547,7 @@ const parse = {
         if(tag===0x4e)o.menuCount=Math.min(v,64);
         if(tag===0x52)o.ratchet=v;
         if(tag===0x57)o.songLanes=v;
+        if(tag===0x60){o.remotePanel=v>=1;o.remotePanelDelta=v>=2;o.remotePanelBatch=v>=3;o.remotePanelRect=v>=4;}
         if(tag===0x50 && o.fm6)o.fm6.caps=v;
         if(tag===0x54)o.nudge=v;
         if(tag===0x43)o.learnMax=v;
@@ -781,6 +784,7 @@ const req = {
 /* which reply belongs to which request (the device echoes these) */
 function replyMatches(cmd, args, a) {
   switch (cmd) {
+    case 126: return a.length>=5 && args.slice(0,5).every((v,i)=>a[i]===v) && (![2,4].includes(args[3]) || args[5]===a[5]);
     case CMD.MOTION: return a[0] === args[0];
     case CMD.BACKUP_GET: return a[0] === args[0] && a.slice(2, 7).every((v, i) => v === args[i + 1]);
     case CMD.BACKUP_PUT: return a[0] === args[0] && a[1] === args[1];
@@ -2767,13 +2771,15 @@ window.addEventListener("hashchange", () => { const h = location.hash.slice(1); 
 const QS = new URLSearchParams(location.search);
 let SIMULATOR = QS.get('view') === 'simulator';
 let BROWSER_AUDIO = QS.get('audio') === '1' || SIMULATOR;
+let DEVICE_PANEL = !BROWSER_AUDIO && QS.get('view') !== 'soundboard';
 let MOCK = QS.get("mock") === "1" || BROWSER_AUDIO;
 $("mock").hidden = !MOCK || BROWSER_AUDIO;
 let browserSynth = null;
 const audioModule = import('./audio/smk-browser.js');
 import('./midi-input.js').then(({mountMIDIInput})=>mountMIDIInput({container:$('browser-session'),getSynth:()=>browserSynth,active:()=>BROWSER_AUDIO,enableAudio:async()=>{if(!BROWSER_AUDIO)throw Error('Select Browser mode first');if(!dev)await connect();if(!browserSynth?.node)throw Error('Enable browser audio first');await browserSynth.context.resume();}}));
-const simulatorModule = import('./smk-simulator.js?pads=1');
+const simulatorModule = import('./smk-simulator.js?panel=4');
 let simulator = null;
+let devicePanel = null, deviceAdapter = null;
 const deviceText = Object.fromEntries(I18N.languages.map(({code:l}) => [l, {...TEXT[l]}]));
 function renderAudioMode() {
   for (const {code:l} of I18N.languages) Object.assign(TEXT[l], deviceText[l]);
@@ -2786,11 +2792,14 @@ function renderAudioMode() {
   document.documentElement.classList.toggle('browser-audio', BROWSER_AUDIO);
   $('audio-volume-label').hidden = !BROWSER_AUDIO;
   $('audio-scope').hidden = !BROWSER_AUDIO;
-  $('mode-fm1').setAttribute('aria-pressed', String(!BROWSER_AUDIO));
+  $('mode-fm1').setAttribute('aria-pressed', String(!BROWSER_AUDIO && DEVICE_PANEL));
+  $('mode-soundboard').setAttribute('aria-pressed', String(!BROWSER_AUDIO && !DEVICE_PANEL));
   $('mode-browser').setAttribute('aria-pressed', String(BROWSER_AUDIO && !SIMULATOR));
   $('mode-simulator').setAttribute('aria-pressed', String(SIMULATOR));
   $('browser-session').hidden = !BROWSER_AUDIO;
   document.documentElement.classList.toggle('smk-simulation', SIMULATOR);
+  document.documentElement.classList.toggle('smk-hardware-view', SIMULATOR || DEVICE_PANEL);
+  if (!DEVICE_PANEL) $('smk-device').hidden = true;
   if (!SIMULATOR) $('smk-simulator').hidden = true;
   $('mock').hidden = !MOCK || BROWSER_AUDIO;
   if (BROWSER_AUDIO) I18N.text($('audio-status'), 'ui.audioNoHardware');
@@ -2920,8 +2929,9 @@ async function connect() {
     setLabel($("connect"), t("disconnect"));
     await load(connectedDevice);
     if (dev === connectedDevice) {
-      playKeyboard.connect(SIMULATOR ? null : dev.output);
+      playKeyboard.connect(SIMULATOR || DEVICE_PANEL ? null : dev.output);
       if (BROWSER_AUDIO) simulator.show(SIMULATOR);
+      else { await mountDevicePanel(); devicePanel.show(DEVICE_PANEL); }
     }
   } catch (e) {
     console.error(e);
@@ -2944,6 +2954,7 @@ async function connect() {
 }
 
 function disconnect(reasonKey = "disconnected") {
+  devicePanel?.release();
   simulator?.show(false);
   playKeyboard.connect(null);
   if (BROWSER_AUDIO) { browserSynth?.stop(); I18N.text($('audio-status'), 'ui.audioStopped'); }
@@ -2953,6 +2964,7 @@ function disconnect(reasonKey = "disconnected") {
     dev.input.onmidimessage = null;
   }
   dev = null;
+  deviceAdapter?.refresh(true);
   resetBusy();
   needReload = false;
   renderPanels();
@@ -2997,7 +3009,6 @@ async function load(d) {
     /* the first frame after opening the port can be lost: a few tries */
     d.info = parse[CMD.INFO](await sessionRequest(d, req.info(), { timeout: 500, retries: 3 }));
     $("version").textContent = d.info.version;
-    if (!BROWSER_AUDIO) $("mode-fm1").textContent = /SMK37/.test(d.info.version) ? "SMK Device" : "FM-1";
     renderPlayKeys();
     const total = d.info.pcount + d.info.gcount;
     for (let i = 0; i < d.info.pcount; i++) { sayK("reading", `${i + 1}/${total}`); d.pdesc[i] = await getDescOrNull(0, i, d); }
@@ -5281,10 +5292,25 @@ $("fm6export").addEventListener("click", () => downloadBytes(`${fileSlug(FM6.nam
 $("connect").addEventListener("click", () => {
   if (dev) { wantConnected = false; disconnect(); } else connect();
 });
+let mountingDevicePanel=null;
+async function mountDevicePanel() {
+  if(devicePanel)return;
+  if(mountingDevicePanel)return mountingDevicePanel;
+  mountingDevicePanel=(async()=>{
+    const [{createSMKSimulator},{createSMKRemotePanel}]=await Promise.all([simulatorModule,import('./smk-remote-panel.js?v=7')]);
+    deviceAdapter=createSMKRemotePanel({
+      connection:()=>!BROWSER_AUDIO&&dev?.dump?{id:dev,supported:!!dev.info.remotePanel,delta:!!dev.info.remotePanelDelta,batch:!!dev.info.remotePanelBatch,rect:!!dev.info.remotePanelRect,busy:busy>0}:null,
+      request:(args,options)=>sessionRequest(dev,[126,args],options),
+    });
+    devicePanel=createSMKSimulator($('smk-device'),deviceAdapter,{connected:true});
+    devicePanel.show(DEVICE_PANEL);
+  })();
+  try{await mountingDevicePanel;}finally{mountingDevicePanel=null;}
+}
 async function switchAudioMode(browser) {
   if ($('connect').disabled) return;
   if (browser === BROWSER_AUDIO) { if (browser && !dev) await connect(); return; }
-  $('mode-fm1').disabled = $('mode-browser').disabled = $('mode-simulator').disabled = true;
+  $('mode-fm1').disabled = $('mode-soundboard').disabled = $('mode-browser').disabled = $('mode-simulator').disabled = true;
   try {
     // Finish an in-flight editor operation instead of silently ignoring the switch.
     while (busy > 0 && dev) await sleep(20);
@@ -5302,22 +5328,28 @@ async function switchAudioMode(browser) {
     history.replaceState(null, '', url.pathname + url.search + '#sound');
     renderAudioMode(); applyLang(); showTab('sound');
     if (browser) await connect(); else sayK('disconnected');
-  } finally { $('mode-fm1').disabled = $('mode-browser').disabled = $('mode-simulator').disabled = false; }
+  } finally { $('mode-fm1').disabled = $('mode-soundboard').disabled = $('mode-browser').disabled = $('mode-simulator').disabled = false; }
 }
 async function selectPlayMode(mode) {
   if (connecting || $('connect').disabled) return;
+  playKeyboard.connect(null); simulator?.release(); devicePanel?.release();
+  const browser=mode==='studio'||mode==='simulator';
   SIMULATOR = mode === 'simulator';
-  if (BROWSER_AUDIO && mode !== 'device') {
-    playKeyboard.connect(null); simulator?.release();
-    renderAudioMode();
-    if (!dev) await connect();
-    if (dev) { simulator.show(SIMULATOR); playKeyboard.connect(SIMULATOR ? null : dev.output); }
-  } else await switchAudioMode(mode !== 'device');
+  DEVICE_PANEL = mode === 'device';
+  await switchAudioMode(browser);
+  renderAudioMode();
+  if(DEVICE_PANEL)await mountDevicePanel();
+  devicePanel?.show(DEVICE_PANEL);
+  simulator?.show(SIMULATOR && !!dev && BROWSER_AUDIO);
+  playKeyboard.connect(!DEVICE_PANEL&&!SIMULATOR?dev?.output:null);
   const url = new URL(location.href);
-  if (SIMULATOR) url.searchParams.set('view', 'simulator'); else url.searchParams.delete('view');
+  if (SIMULATOR) url.searchParams.set('view', 'simulator');
+  else if(mode==='soundboard')url.searchParams.set('view','soundboard');
+  else url.searchParams.delete('view');
   history.replaceState(null, '', url.pathname + url.search + url.hash);
 }
 $('mode-fm1').onclick = () => selectPlayMode('device');
+$('mode-soundboard').onclick = () => selectPlayMode('soundboard');
 $('mode-browser').onclick = () => selectPlayMode('studio');
 $('mode-simulator').onclick = () => selectPlayMode('simulator');
 document.querySelector('.site-nav').addEventListener('click', async e => {
@@ -5392,6 +5424,7 @@ setTimeout(() => {
 applyLang();
 showTab(tab);
 libInit();
+if(DEVICE_PANEL)mountDevicePanel().catch(report);
 if (!MOCK && !navigator.requestMIDIAccess) sayK("nomidi");
 })();
 </script>

@@ -19,14 +19,14 @@
 .studio-graph { margin:6px 0 0; }
 #browser-session:not([hidden]) { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:12px 0; padding:10px 14px; border:1px solid var(--line); border-radius:8px; background:var(--panel); }
 #session-status { font-size:11px; color:var(--dim); margin-left:auto; }
-.smk-simulation :is(.panel,#tabs,#trackbar,.play-keyboard,.keyboard-pull-tab) { display:none!important; }
-.smk-simulation body { padding-bottom:24px!important; }
-#smk-simulator { margin:18px auto 26px; max-width:1200px; }
-#smk-simulator[hidden] { display:none; }
-#smk-simulator.sim-expanded { max-width:none; }
-#smk-simulator:fullscreen { box-sizing:border-box; width:100%; height:100%; max-width:none; margin:0; padding:18px clamp(12px,3vw,48px); overflow:auto; background:var(--bg,#17191b); color:var(--fg,#eee); }
-#smk-simulator:fullscreen .sim-toolbar { position:sticky; top:0; z-index:70; padding:8px 0; margin:0 auto 18px; max-width:1600px; background:var(--bg,#17191b); }
-#smk-simulator:fullscreen .smk-simulator-shell { max-width:1600px; margin:auto; box-sizing:border-box; }
+:is(.smk-hardware-view,.smk-simulation) :is(.panel,#tabs,#trackbar,#hint,.play-keyboard,.keyboard-pull-tab) { display:none!important; }
+:is(.smk-hardware-view,.smk-simulation) body { padding-bottom:24px!important; }
+:is(#smk-simulator,#smk-device) { margin:18px auto 26px; max-width:1200px; }
+:is(#smk-simulator,#smk-device)[hidden] { display:none; }
+:is(#smk-simulator,#smk-device).sim-expanded { max-width:none; }
+:is(#smk-simulator,#smk-device):fullscreen { box-sizing:border-box; width:100%; height:100%; max-width:none; margin:0; padding:18px clamp(12px,3vw,48px); overflow:auto; background:var(--bg,#17191b); color:var(--fg,#eee); }
+:is(#smk-simulator,#smk-device):fullscreen .sim-toolbar { position:sticky; top:0; z-index:70; padding:8px 0; margin:0 auto 18px; max-width:1600px; background:var(--bg,#17191b); }
+:is(#smk-simulator,#smk-device):fullscreen .smk-simulator-shell { max-width:1600px; margin:auto; box-sizing:border-box; }
 .sim-fullscreen-status { flex-basis:100%; font-size:12px; }
 .sim-toolbar .sim-fullscreen-button[hidden] { display:none; }
 .sim-toolbar { display:flex; align-items:center; gap:10px; margin:12px 0; flex-wrap:wrap; }
@@ -117,5 +117,37 @@
 .smk-simulator-shell :is(button,input,select):focus-visible { outline:2px solid #49d4ff; outline-offset:3px; }
 @media(min-width:1900px) { #groups { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 @media(max-width:1050px) { .section-grid { grid-template-columns:1fr; } .sim-top { gap:12px; } .smk-simulator-shell { padding:20px 14px; } .sim-encoder small { display:none; } .sim-pads { gap:6px; padding:8px; } .sim-piano { height:150px; } }
-@media(max-width:700px) { #groups { grid-template-columns:1fr; } .section-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } #smk-simulator { overflow:auto; } .smk-simulator-shell { min-width:660px; } .sim-toolbar { position:sticky; left:0; } #session-status { width:100%; } }
+@media(max-width:700px) { #groups { grid-template-columns:1fr; } .section-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } :is(#smk-simulator,#smk-device) { overflow:auto; } .smk-simulator-shell { min-width:660px; } .sim-toolbar { position:sticky; left:0; } #session-status { width:100%; } }
 @media(max-width:480px) { .section-grid { grid-template-columns:1fr; } }
+
+/* Keep the actual device canvas, enlarged without changing its connection. */
+:is(#smk-simulator,#smk-device).sim-screen-only { max-width:1000px; }
+.sim-toolbar .sim-icon-button[hidden] { display:none; }
+.sim-screen-only :is(.sim-wheels,.sim-center,.sim-right,.sim-bottom) { display:none; }
+.sim-screen-only .sim-top { display:block; }
+.sim-screen-only .smk-simulator-shell { box-sizing:border-box; min-width:0; width:min(100%,860px); margin-inline:auto; padding:22px; }
+.sim-screen-only .sim-lcd { image-rendering:pixelated; }
+:is(#smk-simulator,#smk-device).sim-screen-only:fullscreen { max-width:none; }
+.sim-screen-only:fullscreen .smk-simulator-shell { width:min(100%,calc(100dvh - 180px),1100px); padding:16px; }
+@media(max-width:700px) { .sim-screen-only .smk-simulator-shell { padding:14px; } .sim-screen-only .sim-bezel { padding:8px; } }
+
+/* USB-connected SMK panel: readbacks share the soundboard session. */
+#audio-mode { flex-wrap:wrap; }
+.sim-live-controls { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin:0 0 14px; padding:10px 12px; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+.sim-live-controls label { display:flex; align-items:center; gap:8px; font-size:12px; }
+.sim-live-controls select { max-width:200px; }
+.sim-live-status { margin-left:auto; font-size:12px; color:var(--dim); }
+.sim-live-note { font-size:12px; line-height:1.6; color:var(--dim); max-width:880px; margin:14px auto; text-align:center; }
+.sim-knob-value { display:block; width:100%; max-width:72px; margin:4px auto 0; padding:3px; box-sizing:border-box; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:#0a0d10; color:#cdece3; border-radius:3px; font:10px/1.3 monospace; }
+.smk-connected-panel .sim-encoder small { display:block; }
+.smk-connected-panel .sim-encoder button:disabled { opacity:.45; cursor:not-allowed; }
+.smk-connected-panel .sim-button:disabled { opacity:.45; cursor:not-allowed; }
+.smk-connected-panel .sim-lcd { image-rendering:pixelated; }
+.smk-connected-panel .sim-pads { margin-top:10px; }
+.smk-connected-panel .sim-pad[aria-pressed=true]:not(.lit) { background:linear-gradient(#393d42,#202328); border-color:#747b85; color:#ddd; box-shadow:inset 0 2px 5px #0009; }
+.smk-connected-panel .smk-simulator-shell .sim-pad.lit { background:color-mix(in srgb,var(--device-led) calc(var(--device-led-alpha,1)*100%),#24272c); border-color:var(--device-led); color:#fff; box-shadow:0 0 12px color-mix(in srgb,var(--device-led) 45%,transparent),inset 0 1px #fff4; }
+.smk-connected-panel .sim-button.lit { border-bottom-color:var(--device-led,#6bd993); color:var(--device-led,#6bd993); }
+
+/* Mode icons inherit each theme and the selected button color. */
+#audio-mode.mode-switch button { display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+.mode-icon { width:17px; height:17px; flex:0 0 17px; }

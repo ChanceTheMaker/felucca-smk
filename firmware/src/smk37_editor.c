@@ -283,6 +283,9 @@ static unsigned smk37_editor_handle(const uint8_t *f,unsigned n){
          for(i=0;i<sizeof caps;++i)smk37_ed_byte(caps[i]);
          smk37_ed_byte(0x4e);smk37_ed_byte(1);smk37_ed_byte(SMK37_MENU_COUNT);
          if(smk37_up_ready){smk37_ed_byte(0x50);smk37_ed_byte(1);smk37_ed_byte(3);}} /* only implemented capabilities */
+#if SMK37_REMOTE_PANEL
+        smk37_ed_byte(0x60);smk37_ed_byte(1);smk37_ed_byte(4); /* RP: bounded rectangle batches; v1/v2/v3 compatible */
+#endif
         break;
     case 2:case 3:case 5:{
         if(na!=(cmd==3?4u:2u) || a[0]>1 || a[1]>=(a[0]?G_COUNT:P_COUNT))return 0;
