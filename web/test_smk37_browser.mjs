@@ -29,7 +29,7 @@ await page.addInitScript(frames=>{
  navigator.requestMIDIAccess=async()=>({inputs:new Map([[input.id,input]]),outputs:new Map([[output.id,output]])});
 },frames);
 try{
- await page.goto((process.env.SITE_URL || 'http://127.0.0.1:8770')+'/editor.html',{waitUntil:'domcontentloaded'});console.log('Page loaded');
+ await page.goto((process.env.SITE_URL || 'http://127.0.0.1:8770')+'/editor.html?view=soundboard',{waitUntil:'domcontentloaded'});console.log('Page loaded');
  const consent=page.locator('.analytics-banner [data-choice=denied]');if(await consent.isVisible())await consent.click();
  await page.keyboard.press('Escape');await page.getByRole('button',{name:'Connect',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('#status').textContent==='Connected');console.log('Connected');

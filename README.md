@@ -1,6 +1,6 @@
 # Felucca SMK
 
-Current release: **0.9.24 Beta**, with repaired USB updating. Pro recovery, normal-USB reinstall, playing and an outgoing Melodee update passed. Elite checks remain pending. [Repair evidence](docs/SMK_USB_RECOVERY_024.md).
+Current release: **0.9.27 Beta**, adding a connected Live Panel, a large screen-only view and faster changed-area screen updates. The owner confirmed testing the local 0.9.27 candidate on hardware. This release also retains the repaired USB updater, factory restore and transfer progress from main. [USB repair evidence](docs/SMK_USB_RECOVERY_024.md).
 
 **Custom synthesizer firmware, browser Studio and interactive simulator for M-VAVE SMK-37 Pro & Elite.**
 
@@ -10,7 +10,7 @@ Felucca SMK brings Felucca's synthesis and sequencing to the SMK's 37-key keyboa
 pads, eight knobs, four faders, pitch/mod wheels and display.
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
-[![Version: 0.9.24 Beta](https://img.shields.io/badge/version-0.9.24%20Beta-orange.svg)](firmware/hal/smk37_version.h)
+[![Version: 0.9.27 Beta](https://img.shields.io/badge/version-0.9.27%20Beta-orange.svg)](firmware/hal/smk37_version.h)
 
 [Source](https://github.com/ChanceTheMaker/felucca-smk) |
 [Issues](https://github.com/ChanceTheMaker/felucca-smk/issues) |
@@ -23,7 +23,7 @@ pads, eight knobs, four faders, pitch/mod wheels and display.
 
 ## Project status
 
-The product version is **0.9.23 Beta**, integrating upstream **Felucca 1.5.1**
+The product version is **0.9.27 Beta**, integrating upstream **Felucca 1.5.1**
 at `a4d7ca2e5d52a4c35e2468401f00d883cadbda03`. This is the standalone SMK
 repository. The [FM-1 Salt project](https://github.com/ChanceTheMaker/Felucca)
 is separate; its firmware images are not interchangeable with SMK images.
@@ -31,10 +31,10 @@ is separate; its firmware images are not interchangeable with SMK images.
 | Component | Current state |
 | --- | --- |
 | Studio and Simulator | Included, with a prebuilt native WebAssembly audio/display runtime; usable locally without a device or vendor firmware. |
-| Hardware firmware | Test21 has been exercised on the owner's SMK-37 Pro. Device test records describe the checks and remaining work. |
+| Hardware firmware | The owner confirmed the local 0.9.27 panel candidate was tested. Earlier Pro checks cover playing, saves and USB updating; this is not a full validation of every feature on both models. |
 | Pro & Elite support | Both models are project targets. Stock-package comparisons cover both; the recorded physical tests are on Pro hardware. |
-| Normal USB updates | Tested on the owner's SMK running the custom updater. Existing private packages are tied to that test device. |
-| General public installation | 0.9.23 public beta installer for official Pro/Elite 016; package and transport tests pass. Stock-hardware first-install confirmation remains pending. |
+| Normal USB updates | Public model-gated packages support compatible custom firmware and official 016 entry paths. Pro USB updater repair was tested; the factory-restore option remains available. |
+| General public installation | 0.9.27 public beta installer for official Pro/Elite 016; package and transport tests pass. Stock-hardware first-install confirmation remains pending. |
 | Website deployment | Studio, Simulator and the homepage deploy through GitHub Pages; hardware firmware publication remains separate. |
 
 The website destination is [Felucca SMK](https://chancethemaker.github.io/felucca-smk/),
@@ -81,7 +81,7 @@ or website deployment does not establish that a new firmware image is ready to i
 - Song chains with up to 16 sections and per-track sources from saved projects A-D.
 - Sequence tools including reverse, shift, randomize and drum-lane operations.
 - One-level sound and pattern undo/redo; this is not an unlimited editing history.
-- **Four device projects**, **eight device user presets**, preset naming and favorites.
+- **Four device projects**, **up to 32 device user presets**, preset naming and favorites.
 - Browser Library import/export, plus browser session saving and export/import.
 
 ### Display and navigation
@@ -100,9 +100,14 @@ chromatically, not classified into named chords.
 
 | Mode | What it does |
 | --- | --- |
-| Connected device | Uses USB MIDI to edit a compatible Felucca SMK device. Available functions follow the device's advertised capabilities. |
+| Live Panel | Mirrors and controls the connected SMK screen, keys, pads, knobs and lights. The device is authoritative. Requires panel-capable firmware such as 0.9.27. |
+| Device Studio | Edits the connected SMK using grouped controls, Library, Samples, Projects and Settings. Available functions follow device capabilities. |
 | Browser Studio | Runs the native SMK synthesis/sequencing code in WebAssembly, with browser audio and virtual storage. |
-| SMK Simulator | Presents the native display and musical engine inside an interactive SMK-style panel, on its own page or in Studio. |
+| Simulator | Presents the native display and musical engine inside an interactive SMK-style panel, on its own page or in Studio. |
+
+In **Live Panel**, use the screen icon for a generously sized **Screen only** view; click it again to return to **Full panel**. Fullscreen is also available. Mode buttons have distinct icons and explanatory tooltips. The browser reflects the device's screen and light states instead of inventing local values.
+
+Screen updates send only changed areas, with compact rectangle batches for sequencer movement. Page changes restart from the top. The display is a progressively updated 240 x 240 device image, not a high-frame-rate video stream. Software tests compare transmitted pixels with the firmware rendering and verify input ordering and older-firmware fallback.
 
 The Studio provides grouped, movable Sound cards, per-card knob/slider choices,
 an oscilloscope, sequencer, track mixer, Library, Samples, Projects and Settings.
@@ -417,3 +422,7 @@ ported DSP keep their own licences ([LICENSES/](LICENSES/)); details in [LICENSI
 M-VAVE, FM-1 and SMK-37 product names are trademarks of their respective owners. Felucca is not affiliated with or endorsed by them.
 
 Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+
+### Reproduce the 0.9.27 Live Panel release
+
+Build with `python3 tools/build_smk37.py --public-release --panel-mirror --usb-test-number 27` using the toolchain described in the development guide. The package identity is `SMK-37_927`. The public manifest records the application size and SHA-256; the browser combines it with the selected official model package. Build outputs and private device backups are not published.

@@ -58,6 +58,16 @@
 #include "smk37_velocity.h"
 #include "smk37_pedal.h"
 #include "smk37_synth.c"
+#include "smk37_remote_input.c"
+#if SMK37_REMOTE_PANEL
+#define SMK37_PHYSICAL_KEY(k,v) smk37_surface_key(0,k,v)
+#else
+#define SMK37_PHYSICAL_KEY(k,v) smk37_play_key_event(k,v)
+#endif
+#if SMK37_REMOTE_PANEL
+static unsigned smk37_remote_command(const uint8_t *,unsigned);
+static void smk37_remote_blit(unsigned,unsigned,unsigned,unsigned,const uint16_t *);
+#endif
 #include "smk37_session.c"
 #include "smk37_editor.c"
 /* SMK writes stay gated until raw flash reads and stock restoration are checked.
@@ -192,21 +202,36 @@ void smk37_scanner_irq(void)
 static void smk37_consume_keys(void)
 {
     smk37_performance_poll();
+#if SMK37_REMOTE_PANEL
+    smk37_remote_poll();
+#endif
     if (smk37_button_events.overflow) {
         fm1_irq_off(); smk37_events_discard(&smk37_button_events); fm1_irq_on();
         song.rec=0; transport_req=2;smk37_button_down=smk37_button_held=0;
+#if SMK37_REMOTE_PANEL
+        memset(smk37_surface_buttons,0,sizeof smk37_surface_buttons);
+#endif
         smk37_notice="BUTTON QUEUE LOST / STOP"; smk37_notice_at=fm1_ms;
     }
     smk37_event_t button;
     unsigned button_budget=18;
     while (button_budget-- && smk37_events_pop(&smk37_button_events,&button))
+#if SMK37_REMOTE_PANEL
+        smk37_surface_button(0,button.key,button.duration);
+#else
         smk37_button_input(button.key,button.duration);
+#endif
     smk37_hold_poll();
     if (smk37_pad_events.overflow || smk37_analog_failed) {
         fm1_irq_off();
         smk37_events_discard(&smk37_pad_events);
         fm1_irq_on();
-        for (unsigned i=0; i<16; ++i) smk37_pad_event(i, 0);
+        for (unsigned i=0; i<16; ++i)
+#if SMK37_REMOTE_PANEL
+            smk37_surface_pad(0,i,0);
+#else
+            smk37_pad_event(i,0);
+#endif
         if (smk37_analog_failed && smk37_analog_ready) {
             smk37_wheels(0, 0, smk37_wheel_targets);
             smk37_analog_ready = 0;
@@ -215,14 +240,22 @@ static void smk37_consume_keys(void)
         smk37_event_t pad;
         unsigned budget = SMK37_EVENTS;
         while (budget-- && smk37_events_pop(&smk37_pad_events, &pad))
-            smk37_pad_event(pad.key, pad.duration);
+#if SMK37_REMOTE_PANEL
+            smk37_surface_pad(0,pad.key,pad.duration);
+#else
+            smk37_pad_event(pad.key,pad.duration);
+#endif
     }
     /* No synthesis or USB from scanner IRQ. A scanner failure releases pedal
      * ownership and requires a fresh physical release before arming again. */
     if(smk37_analog_failed){
         fm1_irq_off();smk37_pedal_reset(&smk37_pedal_input);smk37_pedal_latest=0;fm1_irq_on();
     }
+#if SMK37_REMOTE_PANEL
+    smk37_sustain(smk37_pedal_latest || smk37_remote_pedal);
+#else
     smk37_sustain(smk37_pedal_latest);
+#endif
     uint16_t analog[6];
     unsigned analog_valid = 0;
     for (unsigned i=0; i<6; ++i) {
@@ -251,14 +284,19 @@ static void smk37_consume_keys(void)
         smk37_events_discard(&smk37_key_events);
         fm1_irq_on();
         ++smk37_key_overflows;
-        for (unsigned k = 0; k < 37; ++k) smk37_key_event(k, 48+k, 0);
+        for (unsigned k = 0; k < 37; ++k)
+#if SMK37_REMOTE_PANEL
+            smk37_surface_key(0,k,0);
+#else
+            smk37_key_event(k,48+k,0);
+#endif
     }
     smk37_event_t event;
     while (budget-- && smk37_events_pop(&smk37_key_events, &event)) {
         unsigned key = event.key;
         unsigned velocity=smk37_key_velocity(event.duration,smk37_frame_ticks,smk37_velocity_mode);
         if(velocity) smk37_last_velocity=velocity;
-        smk37_play_key_event(key, velocity);
+        SMK37_PHYSICAL_KEY(key, velocity);
     }
 }
 static int smk37_panel_command(uint8_t c) { return smk37_lcd_command(c, 4000000u); }
@@ -408,6 +446,11 @@ static void smk37_editor_service(void)
 #if SMK37_ENABLE_USB_UPDATE
         if(smk37_update_identity(frame,count))return;
 #endif
+#if SMK37_REMOTE_PANEL
+        if(count>=4 && frame[0]==125 && frame[1]==70 && frame[2]==76 && frame[3]==126){
+            n=smk37_remote_command(frame,count);ota_frame_done();
+        }else
+#endif
         if(count==6 && frame[0]==0x7d && frame[1]==0x46 && frame[2]==0x4c && frame[3]==9 && frame[4]<=2 && frame[5]<4){
             unsigned op=frame[4],slot=frame[5];ota_frame_done();
             int rc=0;
@@ -430,10 +473,14 @@ static void lcd_sync(void) {} /* SMK transport completes DMA synchronously. */
 static void lcd_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16_t *pixels)
 {
     if (!smk37_display_ok) return;
+#if SMK37_REMOTE_PANEL
+    smk37_remote_blit(x,y,w,h,pixels);
+#endif
     if (!smk37_panel_window(&smk37_panel_io, x, y, w, h) ||
         !smk37_panel_data(pixels, w*h*2u)) smk37_display_ok = 0;
 }
 #include "gfx.c"
+#include "smk37_remote_screen.c"
 static uint8_t smk37_light_buffer[SMK37_LIGHT_BYTES] __attribute__((aligned(4)));
 static uint8_t smk37_light_failed;
 static uint32_t smk37_light_transfers;
@@ -466,6 +513,12 @@ static void smk37_light_service(void)
     smk37_scan_indicator = !smk37_light_failed && target > 16 ? target-16 : 0;
     smk37_scan_indicator_bits = !smk37_light_failed && (page>=SMK37_SOUND_PAGES || smk37_led_level) ? indicators : 0;
     fm1_irq_on();
+#if SMK37_REMOTE_PANEL
+    smk37_remote_led_pads=smk37_light_failed?0:pads;
+    smk37_remote_led_buttons=smk37_scan_indicator_bits |
+        (smk37_scan_indicator ? 1u<<(smk37_scan_indicator-1) : 0);
+    smk37_remote_led_color=color;smk37_remote_led_level=smk37_light_failed?0:(level>8?8:level);
+#endif
     uint32_t state = pads | (color<<16) | (level<<24);
     if (state == previous || smk37_light_failed) return;
     previous = state;
@@ -524,6 +577,9 @@ static void smk37_status(void)
 {
     if (!smk37_display_ok) return;
     static unsigned shown_page = UINT32_MAX;
+#if SMK37_REMOTE_PANEL
+    if(smk37_remote_refresh){smk37_remote_refresh=0;shown_page=UINT32_MAX;}
+#endif
     static unsigned shown_palette=UINT32_MAX,shown_bold=UINT32_MAX,shown_style=UINT32_MAX,shown_large=UINT32_MAX;
     if(shown_palette!=smk37_palette || shown_bold!=smk37_bold || shown_style!=smk37_style || shown_large!=smk37_large){
         ux.style=smk37_style?ST_LINE:ST_FLAT;shown_style=smk37_style;shown_large=smk37_large;
@@ -735,7 +791,13 @@ void smk37_cstart(const uint32_t *boot_parameters)
     smk37_display_ok = (uint8_t)smk37_panel_init(&smk37_panel_io);
     /* One-shot branding; retain normal startup timing and USB identity. */
     draw_text_line(0, (240 - AF_M.h) / 2, 240, &AF_M, "Felucca SMK", 0xffff, 0, 1);
-    draw_text_line(0, 240 - AF_S.h - 10, 240, &AF_S, SMK37_RELEASE_VERSION, 0x9cf3, 0, 1);
+    draw_text_line(0, 240 - AF_S.h - 10, 240, &AF_S,
+#if SMK37_REMOTE_PANEL
+                   "0.9.27",
+#else
+                   SMK37_RELEASE_VERSION,
+#endif
+                   0x9cf3, 0, 1);
     smk37_boot_state.stage = SMK37_BOOT_SCANNER;
     smk37_adc_init(&smk37_adc);
     /* Stock PC10 idle is low/output. Keep it defined between RGB frames. */

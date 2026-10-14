@@ -31,11 +31,12 @@ def main():
     parser.add_argument('--enable-usb-audio', action='store_true', help='experimental UAC1 recording; requires device timing/host validation')
     parser.add_argument('--enable-samples', action='store_true', help='private sample storage candidate; explicit device initialization required')
     parser.add_argument('--enable-trs', action='store_true', help='TRS MIDI OUT driver; restores explicitly saved preference')
+    parser.add_argument('--panel-mirror', action='store_true', help='local device-master panel candidate; requires hardware validation')
     args = parser.parse_args()
     if args.public_release:
         if args.stock_backups or args.stock_package:
             parser.error('--public-release does not consume private backups or vendor packages')
-        if args.usb_test_number==14:args.usb_test_number=24
+        if args.usb_test_number==14:args.usb_test_number=27
         args.enable_saves=args.enable_presets=args.enable_usb_update=True
         args.enable_usb_audio=args.enable_samples=args.enable_trs=True
     if args.enable_trs and not args.enable_usb_audio:
@@ -64,6 +65,7 @@ def main():
                 if raw[sector:sector+4096] != bytes([255])*4096:
                     parser.error(f'preset allocation is not blank in {backup.name} at {sector:#x}')
     out = build.SRC / "build" / (("smk37-webupdate" if args.usb_test_number==11 else f"smk37-webupdate-test{args.usb_test_number}") if args.enable_usb_update else "smk37-integration")
+    if args.panel_mirror: out = build.SRC / 'build' / 'smk37-panel-mirror-candidate'
     out.mkdir(parents=True, exist_ok=True)
     build.GEN = out / "gen"
     build.GEN.mkdir(parents=True, exist_ok=True)
@@ -71,6 +73,7 @@ def main():
     release_version = re.search(r'SMK37_RELEASE_VERSION "([0-9.]+)"',
                                 (build.FW/'hal/smk37_version.h').read_text())[1]
     update_version = f'Felucca SMK {release_version} Beta' if args.public_release else f'SMK37 TEST{args.usb_test_number:02d} USB'
+    if args.panel_mirror: update_version='Felucca SMK 0.9.27 Beta'
     sample_crcs=[0,0,0]
     if args.enable_samples and not args.public_release:
         raw=args.stock_backups[0].read_bytes()
@@ -100,6 +103,7 @@ def main():
                    check=True, cwd=build.SRC)
     flags = [*build.CFLAGS, f"-DSMK37_ENABLE_SAMPLES={int(args.enable_samples)}", f"-DSMK37_ENABLE_USB_AUDIO={int(args.enable_usb_audio)}", "-Ifirmware/hal", "-Ifirmware/src", f"-I{build.GEN.relative_to(build.SRC)}", f"-DSMK37_ENABLE_PRESETS={int(args.enable_presets)}", f"-DSMK37_ENABLE_SAVES={int(args.enable_saves)}", f"-DSMK37_ENABLE_USB_UPDATE={int(args.enable_usb_update)}"]
     flags += [f'-DSMK37_ENABLE_TRS={int(args.enable_trs)}', f'-DSMK37_EXPANDED_PRESETS={int(args.public_release)}']
+    flags += [f'-DSMK37_REMOTE_PANEL={int(args.panel_mirror)}']
     build.tc_all(
         ("cc", *flags, "-c", build.FW / "src" / "smk37_app.c", "-o", out / "app.o"),
         ("cc", f"-DSMK37_ENABLE_USB_AUDIO={int(args.enable_usb_audio)}", "-c", build.FW / "smk37_crt0.S", "-o", out / "crt0.o"),
@@ -158,6 +162,10 @@ def main():
     manifest = {
         "board": "SMK-37 Pro & Elite" if args.public_release else "SMK-37 Pro", "installable": False,
         "public_build": args.public_release,
+        "remote_panel_support": args.panel_mirror,
+        "remote_panel_protocol": 4 if args.panel_mirror else 0,
+        "remote_panel_hardware_validated": False,
+        "remote_panel_framebuffer_bytes": 28800 if args.panel_mirror else 0,
         "purpose": "offline linked application integration",
         "image": name, "bytes": len(image), "sha256": hashlib.sha256(image).hexdigest(),
         "entry": hex(sym("_start")), "bss_end": hex(sym("_bss_end")),

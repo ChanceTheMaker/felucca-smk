@@ -1130,3 +1130,110 @@ device gone at ~0.3 s, the MIDI port gone at ~0.57 s and back at ~1.15 s; ON -> 
 at ~0.6 s while the MIDI port was not seen to disappear at all (so do not wait for a disconnect event: after
 a real change, wait ~1.5 s and open again). What the editor sends in that window is lost, `WATCH` ends with the
 bus reset (send `INFO` and `WATCH` again after reconnecting), and a backup in progress answers rc 5 (stale).
+
+
+## Local SMK device-panel extension (0.9.24 candidate)
+
+Opt-in build flag `SMK37_REMOTE_PANEL=1`. INFO advertises the append-only
+capability `60 01 01` (hex). Clients must negotiate it; ordinary FM-1 and older
+SMK firmware keep their existing protocol. Command 126 is an experimental SMK
+multiplexer, scoped by the `53 4d 01` magic/version. It is not an upstream allocation.
+
+Request payload: `53 4d 01 op sequence [body]`, inside normal editor SysEx framing.
+Every reply echoes those first five bytes. All bytes are MIDI-safe (0..127).
+There is one request in flight on the editor Link; input edges are FIFO and are
+never retried automatically. A malformed command does not renew the lease.
+
+- Op 0: state, no body. Reply payload is 46 bytes. After the five-byte prefix:
+  button LEDs (3 seven-bit bytes), keys 0..31 (5), keys 32..36 (1), held pads (3),
+  pad LEDs (3), pad color (1: red=0, green=1, blue=2), LED level (2: 0..8), page,
+  track, playing, recording, knob bank, fader bank (one byte each), octave (v14),
+  pad bank (1), master (v14), four faders (v14 each), pitch (v14), mod (1), sustain (1).
+  Unsigned fields are least-significant seven-bit group first; v14 is value+8192.
+- Op 1: `kind id v14`. Reply adds one result byte: 0 queued, 1 invalid, 2 queue full.
+  Kinds: buttons=0, encoder delta=1, keys=2, pads=3, faders=4, wheels=5,
+  sustain=6, release browser ownership=7. Indices match the native SMK simulator.
+  Encoder deltas are bounded to +/-32 and consumed one step per audio half.
+- Op 2: tile index 0..59. Reply is 603 payload bytes: prefix, tile index,
+  sixteen RGB565 palette entries (three seven-bit groups each), then 480 packed
+  pixel bytes escaped in groups of one high-bit mask plus up to seven low bytes.
+  Each tile is four 240-pixel rows. Low nibble is the first pixel in each pair.
+
+The passive 28,800-byte framebuffer records actual LCD blits. It preserves screen
+geometry and content; colors are quantized to sixteen current device UI tokens.
+Tiles update progressively, so this is not a synchronized full-frame video stream.
+LEDs are the masks/colors sent to hardware, not browser guesses. Physical keys,
+pads and browser input have separate owners. Disconnect/hidden-view cleanup and a
+2-second firmware lease release browser owners without releasing physically held
+keys/pads. Lost button holds are canceled, not converted into taps. Physical pedal
+state is ORed with browser sustain; disconnect restores the physical wheel state.
+No persistent layout or flash-write boundary is changed by this extension.
+
+Host/wire/browser tests: `tests/smk37_remote_test.c`, `web/test_smk_remote.mjs`.
+Hardware timing, USB audio under screen streaming and physical light correspondence
+remain to be tested with this candidate before release.
+
+### Panel capability 2: changed strips and compression (local 0.9.25)
+
+Capability tag `60 01 02` retains the v1 envelope and operations 0/1/2.
+New operation 3 takes no body and returns the five-byte prefix plus nine
+seven-bit dirty-map bytes. Bit `tile % 7` in byte `tile / 7` identifies each
+of the 60 four-row strips. The last byte uses only its low four bits.
+Reading this map does not clear it. A tile read clears that tile before
+encoding; subsequent blits mark it again. Pixel comparison prevents identical
+repaints from marking strips. Palette changes and new leases invalidate all.
+
+Operation 4 takes one tile index. Reply: prefix, tile index, encoding byte,
+16 RGB565 palette entries (three seven-bit bytes each), then pixels.
+Encoding 0 is the v1 packed 480-byte payload (549 MIDI-safe bytes).
+Encoding 1 consists of `(length, palette index)` byte pairs, lengths 1..127,
+indices 0..15, totaling exactly 960 pixels in row-major order. RLE is used
+only when shorter than 549 bytes; response including framing is at most
+610 bytes. No additional framebuffer or flash writes are required.
+
+The browser requests all tiles on a new connection, then polls the dirty map
+and fetches only marked strips. V1 devices continue with operation 2. Input
+requests keep priority. An idle display sends small map/state replies, not
+pixel data. Reconnection always starts a new full snapshot. This is progressive
+screen mirroring, not a separately reconstructed UI or an atomic video frame.
+
+### Panel capability 3: bounded batches (local 0.9.26)
+
+Capability `60 01 03` adds operation 5; operations 0..4 remain unchanged.
+The request body is a nine-byte tile bitmap, with only the low four bits
+of its final byte used. The device unions these explicitly requested strips
+with its dirty map. The first connection requests all sixty strips.
+
+Response payload (excluding F0/header/F7): five-byte panel prefix; the same
+41 state bytes as op 0; palette (48 bytes); remaining tile bitmap (9 bytes);
+strip count (1 byte); then records `(tile, encoding, lengthLo7, lengthHi7,
+encodedPixels...)`. Encodings and pixels match op 4. At most 16 records and
+1536 total wire bytes are sent, within the existing 2048-byte editor buffer.
+A round-robin cursor prevents frequently changing strips from starving other
+areas. The remaining map retains requested/dirty strips not included. A fully
+idle response carries state and no strip data. Pixel capture and encoding
+run serially on the main loop; audio and USB interrupts remain enabled while
+encoding. There are no flash changes and no extra framebuffer.
+
+The browser uses these replies for both state and display, avoiding separate
+status queries between screen strips. It waits between idle requests and
+continues immediately for pending strips, yielding to input between replies.
+V1 and V2 connections retain their respective transfer paths.
+
+### Panel capability 4: changed rectangles (local 0.9.27)
+
+Capability `60 01 04` adds operation 6. Its request is the nine-byte bitmap
+followed by a force-full-width flag (0 or 1). Response uses the op 5 state,
+palette and pending-map prefix. Records are `(tile, x/2, width/2, encoding,
+lengthLo7, lengthHi7, encodedPixels...)`. Each rectangle has four rows;
+x and width are even, width is 2..240, and x+width must not exceed 240.
+Pixels are row-major within the rectangle, with the same packed/RLE formats.
+At most 60 records and 1536 total wire bytes fit in one reply.
+
+Each strip tracks the smallest enclosing changed columns, aligned to pixel
+pairs. Palette invalidation and forced reads use the full width. The browser
+forces initial/reconnection snapshots until all strips are present, then
+applies rectangles without clearing their surroundings. Page and palette
+changes reset the scan position to the top; ongoing animation retains fair
+round-robin service. Operations 0..5 remain available for older clients.
+This still updates progressively and does not add a framebuffer or flash writes.
