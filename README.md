@@ -34,7 +34,7 @@ is separate; its firmware images are not interchangeable with SMK images.
 | Hardware firmware | The owner confirmed the local 0.9.27 panel candidate was tested. Earlier Pro checks cover playing, saves and USB updating; this is not a full validation of every feature on both models. |
 | Pro & Elite support | Both models are project targets. Stock-package comparisons cover both; the recorded physical tests are on Pro hardware. |
 | Normal USB updates | Public model-gated packages support compatible custom firmware and official 016 entry paths. Pro USB updater repair was tested; the factory-restore option remains available. |
-| General public installation | 0.9.27 public beta installer for official Pro/Elite 016; package and transport tests pass. Stock-hardware first-install confirmation remains pending. |
+| General public installation | 0.9.27 public beta installer for official Pro/Elite 016; package and transport tests pass. |
 | Website deployment | Studio, Simulator and the homepage deploy through GitHub Pages; hardware firmware publication remains separate. |
 
 The website destination is [Felucca SMK](https://chancethemaker.github.io/felucca-smk/),
@@ -148,7 +148,7 @@ connected-device editing and Web MIDI; localhost is supported for development.
 | K4 | ALGORITHM: track 1-4 | Page |
 | K5-K8 | Current page's four parameters | Current page's four parameters |
 
-"ALGORITHM" here follows the FM-1 panel convention: it selects the track,
+The fourth knob in bank 1 selects the track,
 not an FM6 synthesis algorithm. Knob-bank selection changes the mapping.
 
 ### Navigation
