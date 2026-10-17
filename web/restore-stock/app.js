@@ -1,3 +1,5 @@
+import {hasNativeSmk,runNativeSmk,nativeModel} from '../native-smk.js?v=native1';
+import {requestMidiSession,releaseMidiSession} from '../midi-session.js?v=session1';
 import {createProgress} from '../update-progress.js?v=progress1';
 // SPDX-License-Identifier: GPL-3.0-only
 import {prepareStock,restoreStock} from './core.js?v=progress1';
@@ -32,13 +34,19 @@ $('prepare').onclick=async()=>{
 $('restore').onclick=async()=>{
   if($('restore').disabled)return;busy=true;sync();progress.start();
   try{
-    const access=await navigator.requestMIDIAccess({sysex:true});
-    const result=await restoreStock(access,pkg,log,{confirmModel:({model,identity,version})=>{
-      return confirm('Restore '+version+'?\n\nConfirm the ONLY connected instrument is physically an '+model+'. It currently reports '+identity+'.\n\nThis replaces the current firmware. Custom projects may be incompatible or overwritten by the original firmware. Keep USB and power connected.');
-    }});
+    let result;
+    if(await hasNativeSmk(nativeModel(pkg.model))){
+      if(!confirm('Restore '+pkg.version+'? Confirm the connected instrument is physically an SMK-37 Pro. This replaces its current firmware. Keep USB and power connected.'))throw Error('Restore cancelled. No update was started.');
+      result={identity:await runNativeSmk('restore',log),alreadyStock:false};
+    }else{
+      const access=await requestMidiSession();
+      result=await restoreStock(access,pkg,log,{confirmModel:({model,identity,version})=>{
+        return confirm('Restore '+version+'?\n\nConfirm the ONLY connected instrument is physically an '+model+'. It currently reports '+identity+'.\n\nThis replaces the current firmware. Custom projects may be incompatible or overwritten by the original firmware. Keep USB and power connected.');
+      }});
+    }
     progress.done(result.alreadyStock?'Original firmware already installed and confirmed':undefined);
     $('status').textContent=result.alreadyStock?'Original firmware is already installed.':'Original firmware restored and USB identity confirmed.';pkg=null;
-  }catch(e){progress.fail();$('status').textContent=e.message;log('Stopped: '+e.message);}finally{busy=false;sync();}
+  }catch(e){progress.fail();$('status').textContent=e.message;log('Stopped: '+e.message);}finally{await releaseMidiSession();busy=false;sync();}
 };
 $('save-log').onclick=()=>{const url=URL.createObjectURL(new Blob([$('log').textContent],{type:'text/plain'}));const a=document.createElement('a');a.href=url;a.download='stock-restore-log.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);};
 window.addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue='';}});

@@ -1,3 +1,5 @@
+import {hasNativeSmk,runNativeSmk,nativeModel} from './native-smk.js?v=native1';
+import {requestMidiSession,releaseMidiSession} from './midi-session.js?v=session1';
 import {createProgress} from './update-progress.js?v=progress1';
 // SPDX-License-Identifier: GPL-3.0-only
 import {parsePackage,installSmk,installStockSmk} from './smk37-update.js?v=progress1';
@@ -21,7 +23,7 @@ const loopback=['localhost','127.0.0.1','[::1]'].includes(location.hostname);
 const privateRequested=loopback&&new URLSearchParams(location.search).has('private');
 const publicPreview=loopback&&new URLSearchParams(location.search).has('public');
 let release,pkg,busy=false,selection=0,usingPrivate=false;
-const sync=()=>{button.disabled=busy||!pkg||!ack.checked||!navigator.requestMIDIAccess;file.disabled=busy;path.disabled=busy;model.disabled=busy;ack.disabled=busy;};
+const sync=()=>{document.getElementById('native-usb-help').hidden=!(model.value==='SMK-37 Pro'&&/win/i.test(navigator.userAgentData?.platform||navigator.platform||''));button.disabled=busy||!pkg||!ack.checked||!navigator.requestMIDIAccess;file.disabled=busy;path.disabled=busy;model.disabled=busy;ack.disabled=busy;};
 const log=message=>{status.textContent=message;output.textContent+=message+'\n';};
 ack.addEventListener('change',sync);
 window.addEventListener('beforeunload',event=>{if(busy){event.preventDefault();event.returnValue='';}});
@@ -73,9 +75,15 @@ sync();
 button.addEventListener('click',async()=>{
   if(button.disabled)return;busy=true;sync();progress.start();
   try{
-    const midi=await navigator.requestMIDIAccess({sysex:true});
-    if(usingPrivate||path.value==='update')await installSmk(midi,pkg,log);
-    else await installStockSmk(midi,pkg,log,{confirmGeneric});
+    if(await hasNativeSmk(nativeModel(model.value))){
+      if(usingPrivate)throw Error('The Windows USB helper installs the published Felucca release. Open the public installer for this operation.');
+      await runNativeSmk('install',log);
+    }else{
+      const midi=await requestMidiSession();
+      if(usingPrivate||path.value==='update')await installSmk(midi,pkg,log);
+      else await installStockSmk(midi,pkg,log,{confirmGeneric});
+    }
+
     progress.done();
-  }catch(e){progress.fail();log(e.message);}finally{busy=false;sync();}
+  }catch(e){progress.fail();log(e.message);}finally{await releaseMidiSession();busy=false;sync();}
 });

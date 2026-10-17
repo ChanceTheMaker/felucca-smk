@@ -54,7 +54,7 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
     </dialog>
 <p class="stock-restore-link"><a href="restore-stock/">Restore original M-VAVE firmware</a></p>
 <label><input type="checkbox" id="ack"> I understand this is beta firmware, have backed up my sounds and settings, and accept that a failed installation may require hardware recovery.</label>
-    <button class="primary" id="install-button" disabled>Install / resume SMK beta</button>
+    <p id="native-usb-help" hidden>Windows SMK-37 Pro installs use the <a href="https://github.com/ChanceTheMaker/felucca-smk/tree/fix/windows-native-usb#windows-usb-installation">Felucca USB helper</a>. Start it once, then install here. Allow local-network access if Chrome asks.</p><button class="primary" id="install-button" disabled>Install / resume SMK beta</button>
     <p class="small">Keep USB and device power connected until installation completes. First installation uses your model’s official loader. The prepared package changes application content only. Later Felucca updates enforce application-only writes, excluding calibration, projects and presets.</p>
     <details><summary>Installation log</summary><pre id="log" aria-live="polite"></pre></details>
     <p class="small"><a href="midi-diagnostics.html" target="_blank" rel="noopener">MIDI connection check</a> — collect port names and identity replies without starting an update. Stock Elite/Pro loader trouble? <a href="midi-diagnostics.html#handoff" target="_blank" rel="noopener">Test the loader handoff</a> without starting the flash-writing stage.</p>
@@ -98,4 +98,4 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
 <footer>
 <nav class="smk-family" aria-label="SMK family"><span>Explore the SMK family</span><a href="https://chancethemaker.github.io/smklab/">SMKLab ↗</a><a href="https://chancethemaker.github.io/felucca-smk/">Felucca SMK ↗</a><a href="https://chancethemaker.github.io/sloop-smk/">Sloop SMK ↗</a><a href="https://chancethemaker.github.io/melodee-smk/">Melodee SMK ↗</a></nav>
 Felucca SMK by Chance Roth (<a href="https://github.com/ChanceTheMaker" target="_blank" rel="noopener">@ChanceTheMaker</a>). Based on Felucca by Leo Kuroshita (@kurogedelic), H&uuml;gelton Instruments. GPL-3.0. M-VAVE and SMK-37 are trademarks of their respective owners.</footer>
-</main><script src="smk37-installer-start.js?v=panel27"></script></body></html>
+</main><script src="smk37-installer-start.js?v=native1"></script></body></html>

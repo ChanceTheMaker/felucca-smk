@@ -742,3 +742,20 @@ BSS end 0x1c18cdc; pool end unchanged at 0x1c73e58. Hardware sequencer speed
 and audio/control responsiveness under rectangle streaming remain pending.
 
 Publication 0.9.27 (2026-10-14): owner confirmed hardware testing of the local panel candidate and authorized release. Rebased onto fork main 00197c1 to retain factory restore, progress reporting, compatible Doom handoff and repaired Pro calibration/updater handling. The final combined application is 420600 bytes, SHA256 eed32575f2143f5a3d611caaf1e22bd5f6424bb7ced9a18ca2a45d83c705d870. Its screen implementation matches the tested candidate; updater repair is from the prior released 0.9.24. Do not conflate that evidence with a new full test of the combined image on both models. Public identity SMK-37_927, capability 4; Bluetooth remains isolated. README and homepage describe Live Panel, Device Studio, Simulator, Browser Studio and screen-only mode.
+
+## Windows SMK Pro USB isolation (2026-10-16)
+
+Ports Sloop 0a51b35's native Windows helper and disposable MIDI sessions.
+Installation and original-firmware restore require the matching helper on Windows
+Pro; errors never fall back to browser MIDI. Package construction uses this
+project's own verified builders and pins the existing app. Expected boot identity:
+SMK-37_927. No firmware, protected storage or protocol changes. Elite retains
+its existing browser path. No upstream contribution was submitted.
+
+Validation includes mocked native stages, cross-process exclusion, HTTP boundary
+checks, package verification and browser install/restore routing. Hardware checks
+passed on the connected SMK-37 Pro: Sloop 938 to Felucca 927, then
+original Pro 016. Both exact restart identities were confirmed. The real
+installer page made zero Web MIDI requests; its heartbeat advanced throughout
+the install (426 ticks at 100 ms). Hardware-test baseline: d52e437. Reconciled with ba2e583 homepage copy;
+firmware and transport unchanged.
