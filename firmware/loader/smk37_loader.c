@@ -13,6 +13,7 @@
 #include "fm1_sys.h"
 #define FL_RANGE_OK(off,n) ((uint32_t)(off)>=0x4000u && (uint32_t)(off)<0x9d000u && (uint32_t)(n)>0 && (uint32_t)(n)<=0x9d000u-(uint32_t)(off))
 #include "fm1_flash.h"
+#include "smk37_flash_profile.h"
 #include "../src/libc.c"
 #include "../src/usb.c"
 static uint32_t ota_now_ms(void){
@@ -27,6 +28,7 @@ static int ota_fread(uint32_t a,void*p,uint32_t n){return fl_read_ram(a,p,n);}
 static void ota_show(uint32_t s,int32_t c){(void)s;(void)c;}
 static void ota_commit(const uint8_t*p){(void)p;}
 #include "../src/ota.c"
+static int smku_flash_supported(uint32_t id){return smk37_flash_supported_id(id);}
 static uint32_t smku_flash_id(void){return fl_jedec_ram();}
 static int smku_read(uint32_t a,uint8_t*p,uint32_t n){return ota_read(a,p,n);}
 static int smku_flash_read(uint32_t a,void*p,uint32_t n){return fl_read_ram(a,p,n);}
@@ -34,6 +36,12 @@ static int smku_flash_erase(uint32_t a){uint32_t t;return fl_erase4k_ram(a,&t);}
 static int smku_flash_prog(uint32_t a,const void*p,uint32_t n){uint32_t t;return fl_prog_ram(a,p,n,&t);}
 static void smku_poll(void){ota_idle();}
 #include "smk37_update_core.c"
+/* Versioned SMKU diagnostic inside the existing checksummed OTA envelope.
+ * Distinct from read/identity commands; older hosts ignore it. */
+static void smku_report(int rc){
+    uint8_t body[12]={'S','M','K','U',1,(uint8_t)(-rc),(uint8_t)smku_write_started,0};
+    ota_wr32(body+8,smku_observed_id);ota_send_msg(0x7e,body,sizeof body);
+}
 extern uint32_t _bss_start[],_bss_end[];
 void ldr_cstart(void){
     for(uint32_t*p=_bss_start;p<_bss_end;++p)*p=0;
@@ -41,7 +49,8 @@ void ldr_cstart(void){
     for(;;){
         ota_idle();usb_retry(ota_now_ms());ota_service();
         if(usb.ota_req){usb.ota_req=0;
-            if(smku_session()==0){fm1_delay_ms(200);usb_detach();fm1_delay_ms(30);fm1_core_reset();}
+            int rc=smku_session();if(rc)smku_report(rc);
+            if(rc==0){fm1_delay_ms(200);usb_detach();fm1_delay_ms(30);fm1_core_reset();}
             /* On failure keep polling USB in RAM, allowing explicit retry. */
         }
         if(usb.uboot_req){usb_detach();fm1_delay_ms(30);fm1_enter_uboot();}

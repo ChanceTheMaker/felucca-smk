@@ -6,6 +6,8 @@
  */
 #include "smk37_update_format.h"
 #include "smk37_public_profile.h"
+static uint32_t smku_observed_id;
+static unsigned smku_write_started;
 static uint8_t smku_header[SMKU_HEADER],smku_sector[4096],smku_current[4096];
 static uint32_t smku_flash_crc(uint32_t off,uint32_t n,int *ok){
     uint32_t crc=~0u;
@@ -18,7 +20,8 @@ static int smku_fetch(unsigned sector){
     return (smku_crc(smku_sector,4096,~0u)^~0u)==smku_rd(smku_header+128+sector*4)?0:-2;
 }
 static __attribute__((noinline)) int smku_session(void){
-    if(smku_flash_id()!=0x856014u)return -14;
+    smku_write_started=0;smku_observed_id=smku_flash_id();
+    if(!smku_flash_supported(smku_observed_id))return -14;
     for(unsigned k=0;k<SMKU_HEADER;k+=512)if(smku_read(k,smku_header+k,512))return -1;
     int ok=1;
     uint32_t head_crc=SMK37_UNIT_HEAD_CRC,trim_crc=SMK37_UNIT_TRIM_CRC;
@@ -43,6 +46,7 @@ static __attribute__((noinline)) int smku_session(void){
         if(smku_flash_read(off,smku_current,4096))return -7;
         unsigned different=0;for(unsigned i=0;i<4096;++i)different|=smku_sector[i]^smku_current[i];
         if(!different)continue;
+        smku_write_started=1;
         if(smku_flash_erase(off))return -8;
         for(unsigned k=0;k<4096;k+=256)if(smku_flash_prog(off+k,smku_sector+k,256))return -9;
         if(smku_flash_read(off,smku_current,4096))return -10;
