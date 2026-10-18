@@ -5,6 +5,8 @@ import hashlib,json,os,re,shutil,subprocess,sys,threading,time,uuid,tempfile
 
 ROOT=Path(__file__).resolve().parents[1]
 WORK=ROOT/'build/native-smk'
+sys.path.insert(0,str(ROOT/'tools'))
+from smk_diagnostics import parse_status, status_error
 
 class Bridge:
     def __init__(self,owner=False):
@@ -96,7 +98,7 @@ def worker(stage,directory,expected):
         if stage=='verify' and text!=expected:raise RuntimeError('Unexpected restart: '+text+'; expected '+expected)
         emit(ok=True,identity=text,log='Connected: '+text);return
     manifest=json.loads((directory/'verified.json').read_text())
-    if manifest['model']!='SMK-37 Pro' or manifest['expected'] not in ('SMK-37_927','SMK-37 Pro_016'):raise RuntimeError('Invalid verified package')
+    if manifest['model']!='SMK-37 Pro' or manifest['expected'] not in ('SMK-37_927','SMK-37_928','SMK-37 Pro_016'):raise RuntimeError('Invalid verified package')
     def payload(kind):
         data=(directory/(kind+'.bin')).read_bytes();meta=manifest[kind]
         if len(data)!=meta['bytes'] or hashlib.sha256(data).hexdigest()!=meta['sha256']:raise RuntimeError('Firmware changed after verification')
@@ -110,6 +112,8 @@ def worker(stage,directory,expected):
             if not pkt:
                 if link.lost or time.monotonic()-last>15:raise RuntimeError('USB transfer interrupted. Keep the SMK powered and retry; no automatic retry was made.')
                 continue
+            status=parse_status(pkt)
+            if status:raise RuntimeError(status_error(status))
             request=wire.parse_request(pkt)
             if not request:continue
             flags,address,size=request;last=time.monotonic()

@@ -36,7 +36,7 @@ def main():
     if args.public_release:
         if args.stock_backups or args.stock_package:
             parser.error('--public-release does not consume private backups or vendor packages')
-        if args.usb_test_number==14:args.usb_test_number=27
+        if args.usb_test_number==14:args.usb_test_number=28
         args.enable_saves=args.enable_presets=args.enable_usb_update=True
         args.enable_usb_audio=args.enable_samples=args.enable_trs=True
     if args.enable_trs and not args.enable_usb_audio:
@@ -73,7 +73,7 @@ def main():
     release_version = re.search(r'SMK37_RELEASE_VERSION "([0-9.]+)"',
                                 (build.FW/'hal/smk37_version.h').read_text())[1]
     update_version = f'Felucca SMK {release_version} Beta' if args.public_release else f'SMK37 TEST{args.usb_test_number:02d} USB'
-    if args.panel_mirror: update_version='Felucca SMK 0.9.27 Beta'
+    if args.panel_mirror: update_version=f'Felucca SMK {release_version} Beta'
     sample_crcs=[0,0,0]
     if args.enable_samples and not args.public_release:
         raw=args.stock_backups[0].read_bytes()

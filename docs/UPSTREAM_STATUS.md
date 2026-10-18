@@ -1,3 +1,13 @@
+## Felucca SMK 0.9.28 flash compatibility candidate — 2026-10-18
+
+Focused issue #17 fix from fork baseline `1e4bb38`: share the exact 856014 / EB6014
+allowlist between update and storage, retain all protected-region checks, and
+report loader failures to both installers and stock restore. Upstream stays
+at Felucca 1.5.1 `a4d7ca2`. Host suites and the owner's 856014 Pro round trip
+passed. EB6014 and Elite hardware validation remain pending. Public firmware
+artifacts remain 0.9.27; no upstream contribution submitted.
+[Evidence, protocol and recovery limits](smk37/FLASH_COMPATIBILITY.md).
+
 ## Felucca SMK 0.9.24 USB repair — 2026-10-12
 
 Selected for authorized publication after Pro recovery, normal-USB reinstall

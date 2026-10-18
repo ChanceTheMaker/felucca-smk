@@ -1,5 +1,6 @@
 import {createTransferCounter,reportProgress} from '../update-progress.js?v=progress1';
 // SPDX-License-Identifier: GPL-3.0-only
+import {parseSmkStatus,smkStatusError} from '../smk-diagnostics.js';
 // Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
 //
 // The FM-1 USB-MIDI update protocol over WebMIDI (after tools/fm1_install.py).
@@ -244,6 +245,8 @@ export class Updater {
         if (Date.now() - last > idleMs) return { served, finished: false };
         continue;
       }
+      const status = parseSmkStatus(pkt);
+      if (status) throw smkStatusError(status);
       const r = parseRequest(pkt);
       if (!r) continue;
       last = Date.now();

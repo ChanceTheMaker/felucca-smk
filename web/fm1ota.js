@@ -1,3 +1,4 @@
+import {parseSmkStatus, smkStatusError} from './smk-diagnostics.js';
 import {createTransferCounter,reportProgress} from './update-progress.js?v=progress1';
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
@@ -235,6 +236,8 @@ export class Updater {
         if (Date.now() - last > idleMs) return { served, finished: false };
         continue;
       }
+      const status = parseSmkStatus(pkt);
+      if (status) throw smkStatusError(status);
       const r = parseRequest(pkt);
       if (!r) continue;
       last = Date.now();

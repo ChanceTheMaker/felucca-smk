@@ -28,12 +28,15 @@ static int smku_flash_read(uint32_t off,void*p,uint32_t n){assert(off<=sizeof fl
 static int smku_flash_erase(uint32_t off){assert(off>=SMKU_LO && off<=SMKU_HI-4096 && !(off%4096));++erases;memset(flash+off,255,4096);return 0;}
 static int smku_flash_prog(uint32_t off,const void*p,uint32_t n){assert(off>=SMKU_LO && off<SMKU_HI && n<=SMKU_HI-off);++programs;if(mode==5)return -1;memcpy(flash+off,p,n);if(mode==7)flash[0xc1f00]=0;return 0;}
 static void smku_poll(void){}
-static uint32_t smku_flash_id(void){return mode==6?0:0x856014;}
+#include "smk37_flash_profile.h"
+static uint32_t test_flash_id=0x856014;
+static uint32_t smku_flash_id(void){return mode==6?0:test_flash_id;}
+static int smku_flash_supported(uint32_t id){return smk37_flash_supported_id(id);}
 #include "../firmware/loader/smk37_update_core.c"
 static void put(unsigned off,uint32_t x){for(unsigned i=0;i<4;++i)package[off+i]=(uint8_t)(x>>(8*i));}
 static void seal(void){put(44,0);put(44,smku_crc(package,SMKU_HEADER,~0u)^~0u);}
 static void setup(void){
-    mode=0;erases=programs=reads=fetches=0;
+    mode=0;test_flash_id=0x856014;erases=programs=reads=fetches=0;
     for(unsigned i=0;i<sizeof flash;++i)flash[i]=(uint8_t)(i*7+i/251);
 #ifdef TEST_PUBLIC
     memcpy(flash+0xc1000+548,"trimdat",8);
@@ -66,6 +69,8 @@ int main(int argc,char **argv){
 
     setup();assert(smku_session()==0);assert(erases==1 && programs==16);assert(!memcmp(flash+SMKU_LO,package+SMKU_HEADER,SMKU_BYTES));protected_ok();
     erases=programs=fetches=0;assert(smku_session()==0 && !erases && !programs);
+    setup();test_flash_id=0xeb6014;assert(smku_session()==0);protected_ok();
+    setup();test_flash_id=0xffffff;assert(smku_session()==-14&&!erases&&!reads&&!smku_write_started);
     setup();mode=6;assert(smku_session()<0 && !erases);
     setup();package[0]^=1;assert(smku_session()<0 && !erases);
     setup();put(24,0xf3000);seal();assert(smku_session()<0 && !erases);
