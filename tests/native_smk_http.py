@@ -24,7 +24,7 @@ for hosted in [False,True]:
   assert request('OPTIONS',headers={'Origin':origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type,x-felucca-token'}).status==204
   for headers in [{'Origin':origin},{'Origin':origin,'X-Felucca-Token':'wrong'},{'Origin':'null','X-Felucca-Token':cap['token']}]:
    assert request('POST','/api/smk/jobs',headers,b'{}').status==403
-  assert cap['app']=='felucca-smk' and cap['firmware']=='SMK-37_927'
+  assert cap['app']=='felucca-smk' and cap['firmware']=='SMK-37_928'
   h={'Origin':origin,'X-Felucca-Token':cap['token'],'Content-Type':'application/json'}
   assert request('POST','/api/smk/jobs',h,b'{"action":"shell","model":"smk-pro","app":"felucca-smk"}').status==400
   assert request('POST','/api/smk/jobs',h,b'{"action":"install","model":"fm1","app":"felucca-smk"}').status==400

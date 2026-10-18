@@ -1,6 +1,6 @@
 # Flash ID compatibility and stock recovery
 
-Candidate 0.9.28 addresses Felucca issue [#17](https://github.com/ChanceTheMaker/felucca-smk/issues/17#issuecomment-6249932641).
+Release 0.9.28 addresses Felucca issue [#17](https://github.com/ChanceTheMaker/felucca-smk/issues/17#issuecomment-6249932641).
 Baseline: `1e4bb38c18d06f77757029f1ba4876bfc0856cf6`; musical upstream remains
 Felucca 1.5.1, `a4d7ca2e5d52a4c35e2468401f00d883cadbda03`.
 
@@ -68,8 +68,10 @@ restarted as `SMK-37_928`. A deliberately invalid header was rejected before
 erase, returning error 2 and measured ID `856014`. The same loader subsequently
 restored original Pro 016, completed application readback, and the restarted
 device replied `SMK-37 Pro_016`. UI/sound confirmation is separate. EB6014 and Elite candidate validation remain
-pending; an 856014 test does not establish either. Keep public 0.9.27 artifacts
-unchanged until the affected-variant validation supports promotion.
+pending; an 856014 test does not establish either. The owner explicitly authorized
+publication after this round trip. Public 0.9.28 uses the exact tested application
+hash above, with matching tagged source; the installer and native helper pins
+advance together. This release does not claim confirmed recovery on EB6014.
 
 Sibling project rollout and unrelated DAW-control work are outside this
 narrowed task. No upstream contribution or issue reply has been submitted.

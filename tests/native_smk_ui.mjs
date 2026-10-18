@@ -34,14 +34,14 @@ try{
   const req=route.request(),url=new URL(req.url());
   if(url.pathname.endsWith('/capabilities')){
    probes++;if(mode==='absent')return route.abort('connectionrefused');
-   return route.fulfill({json:{available:true,models:['smk-pro'],protocol:1,token,app:mode==='wrong'?'other-app':'felucca-smk',firmware:'SMK-37_927'}});
+   return route.fulfill({json:{available:true,models:['smk-pro'],protocol:1,token,app:mode==='wrong'?'other-app':'felucca-smk',firmware:'SMK-37_928'}});
   }
   if(req.method()==='POST'){
    assert.equal(req.headers()['x-felucca-token'],token);
    const body=req.postDataJSON();assert.deepEqual(body,{action:body.action,model:'smk-pro',app:'felucca-smk'});
    actions.push(body.action);return route.fulfill({json:{id:'test-job'}});
   }
-  return route.fulfill({json:{state:mode==='error'?'error':'done',error:'Simulated USB interruption',phase:'reboot',logs:['Simulated restart verification'],identity:actions.at(-1)==='restore'?'SMK-37 Pro_016':'SMK-37_927'}});
+  return route.fulfill({json:{state:mode==='error'?'error':'done',error:'Simulated USB interruption',phase:'reboot',logs:['Simulated restart verification'],identity:actions.at(-1)==='restore'?'SMK-37 Pro_016':'SMK-37_928'}});
  });
  await page.goto(base);await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('ready.'));
  assert.equal(probes,0,'No helper access during page loading');

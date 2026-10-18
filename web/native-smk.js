@@ -13,11 +13,11 @@ export async function hasNativeSmk(model,fetcher=fetch){
   const response=await fetcher(apiBase+'/api/smk/capabilities',{cache:'no-store',signal:AbortSignal.timeout(20000)});
   if(!response.ok){if(required)throw Error();return false;}
   const result=await response.json();
-  if(required&&(result.app!=='felucca-smk'||result.firmware!=='SMK-37_927'||result.protocol!==1||typeof result.token!=='string'||result.token.length<32))throw Error();
+  if(required&&(result.app!=='felucca-smk'||result.firmware!=='SMK-37_928'||result.protocol!==1||typeof result.token!=='string'||result.token.length<32))throw Error();
   const available=result.available===true&&result.models?.includes(model);
   if(required&&!available)throw Error();
   token=result.token||'';return available;
- }catch{throw Error(hosted?'Start the Felucca Windows USB helper, then retry here. Allow local-network access if Chrome asks. The browser MIDI updater was not started.':'The local SMK USB service could not be reached. Keep the device powered and restart the local preview before retrying.');}
+ }catch{throw Error(hosted?'Start the Felucca 0.9.28 Windows USB helper (update older copies), then retry here. Allow local-network access if Chrome asks. The browser MIDI updater was not started.':'The local SMK USB service could not be reached. Keep the device powered and restart the local preview before retrying.');}
 }
 export async function runNativeSmk(action,log=()=>{},fetcher=fetch){
  async function request(url,options={}){
