@@ -423,9 +423,9 @@ M-VAVE, FM-1 and SMK-37 product names are trademarks of their respective owners.
 
 Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
 
-### Reproduce the 0.9.27 Live Panel release
+### Reproduce the 0.9.28 flash compatibility release
 
-Build with `python3 tools/build_smk37.py --public-release --panel-mirror --usb-test-number 27` using the toolchain described in the development guide. The package identity is `SMK-37_927`. The public manifest records the application size and SHA-256; the browser combines it with the selected official model package. Build outputs and private device backups are not published.
+Build with `python3 tools/build_smk37.py --public-release --panel-mirror --usb-test-number 28` using the toolchain described in the development guide. The package identity is `SMK-37_928`. The public manifest records the application size and SHA-256; the browser combines it with the selected official model package. Build outputs and private device backups are not published.
 
 ## Windows USB installation
 
@@ -434,6 +434,7 @@ on Windows, so Chrome does not own MIDI during the device restart. The same
 Install and Restore buttons remain on the website. Other platforms and Elite
 retain their existing browser installer; the native path is Pro-only.
 
+Use the current 0.9.28 checkout; update older helper copies before installing.
 With Python 3 and Node.js 22+ installed, run from this checkout:
 
 ```powershell
