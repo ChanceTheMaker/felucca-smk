@@ -133,3 +133,21 @@ hardware audio timing or CPU budget follows from host renders. Physical Pro and
 Elite installation, power cycling, sound, calibration and stock restore for this
 exact application are not yet verified. Published firmware/helper pins remain
 0.9.28. No backward-save hardware promise is made.
+
+
+### Owner SMK Pro validation ? 2026-10-21
+
+Candidate app SHA-256 `f3b040f765be378ce05e319943a08f20c6d382b74cc1485d259abf83f0636415`
+installed over the native Windows transport from Sloop `SMK-37_954` and
+restarted as `SMK-37_929`. The owner confirmed screen, controls and sound.
+Real-device editor checks passed: condition set/readback, save/load in previously
+empty project slot 1, custom-palette query and remote-panel state. After the
+owner switched the unit off for five seconds and back on, loading slot 1
+recovered the saved FILL condition. This test project remains in slot 1.
+Original firmware restore then completed and the restarted unit replied
+`SMK-37 Pro_016`. Local evidence: `build/hardware-929/hardware.jsonl`,
+`features.json`, and `power-cycle.json`. Native transport was used; this is
+not a browser installer or Chrome disconnect validation. Elite, FM-1,
+long-run timing and detailed physical testing of every new tool remain untested.
+Nothing was published. A separate naming correction is being prepared and
+must not be conflated with this tested application hash.
