@@ -5,6 +5,12 @@ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import urlparse,parse_qs
 ROOT=Path(__file__).resolve().parents[1]
+def application_sha256():
+    try:
+        return json.loads((ROOT/'web'/'firmware/public-release.json').read_text(encoding='utf-8'))['sha256']
+    except (OSError,ValueError,KeyError,TypeError,StopIteration):
+        return None  # OG recovery does not require a custom firmware manifest.
+
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--port',type=int,default=8893)
     p.add_argument('--allow-hosted',action='store_true',help='Allow the official Felucca site to use this loopback USB helper')
@@ -46,7 +52,7 @@ def main():
             u=urlparse(self.path)
             if u.path.startswith('/api/smk/'):
                 if not self.api_allowed():self.send_error(403);return
-                if u.path=='/api/smk/capabilities':self.json_reply({'available':bridge.available,'models':['smk-pro'] if bridge.available else [],'protocol':1,'token':api_token,'app':'felucca-smk','firmware':'SMK-37_928'});return
+                if u.path=='/api/smk/capabilities':self.json_reply({'available':bridge.available,'models':['smk-pro'] if bridge.available else [],'protocol':1,'token':api_token,'restore_product':'SMK-37 Pro_016','application_sha256':application_sha256(),'app':'felucca-smk','firmware':'SMK-37_928'});return
                 if u.path.startswith('/api/smk/jobs/'):
                     job=bridge.status(u.path.removeprefix('/api/smk/jobs/'))
                     self.json_reply(job if job else {'error':'Unknown operation'},200 if job else 404);return

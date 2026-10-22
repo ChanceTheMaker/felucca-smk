@@ -1,4 +1,4 @@
-﻿"""Exercise helper HTTP boundaries without starting any device operation."""
+"""Exercise helper HTTP boundaries without starting any device operation."""
 import json,subprocess,sys,time,urllib.request,urllib.error,socket
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
@@ -21,6 +21,8 @@ for hosted in [False,True]:
   if not hosted:continue
   assert r.headers['Access-Control-Allow-Origin']==origin
   cap=json.load(r);assert cap['protocol']==1 and len(cap['token'])>=32
+  assert cap['restore_product']=='SMK-37 Pro_016'
+  assert isinstance(cap['application_sha256'],str) and len(cap['application_sha256'])==64
   assert request('OPTIONS',headers={'Origin':origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type,x-felucca-token'}).status==204
   for headers in [{'Origin':origin},{'Origin':origin,'X-Felucca-Token':'wrong'},{'Origin':'null','X-Felucca-Token':cap['token']}]:
    assert request('POST','/api/smk/jobs',headers,b'{}').status==403

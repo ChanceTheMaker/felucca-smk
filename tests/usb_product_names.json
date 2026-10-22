@@ -1,0 +1,29 @@
+[
+  {
+    "source": "firmware/src/usb.c",
+    "defines": {},
+    "name": "Felucca FM-1"
+  },
+  {
+    "source": "firmware/src/usb.c",
+    "defines": {
+      "FELUCCA_LOADER": 1
+    },
+    "name": "Felucca FM-1 Update"
+  },
+  {
+    "source": "firmware/src/usb.c",
+    "defines": {
+      "SMK37_UPDATE_PRODUCT": "\"SMK-37_TEST\""
+    },
+    "name": "Felucca SMK-37"
+  },
+  {
+    "source": "firmware/src/usb.c",
+    "defines": {
+      "SMK37_UPDATE_PRODUCT": "\"SMK-37_TEST\"",
+      "FELUCCA_LOADER": 1
+    },
+    "name": "Felucca SMK-37 Update"
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "scope": "USB product/model names and Sloop-compatible original-firmware restoration",
+  "source_of_restore_contract": "Sloop commit 5c5a40f29b2d1091fa2b709fe577f860d4f919ac",
+  "base_commit": "67bd5a933ece19931786bbcb626c5847ee351f91",
+  "transport_identifiers_changed": false,
+  "boot_calibration_or_flash_ranges_changed": false,
+  "published_firmware_changed": false,
+  "validation": [
+    "native_smk_client.mjs: legacy restore, exact install digest, wrong-model/protocol/token rejection, action binding",
+    "native_smk_http.py: hosted origin, loopback host, token and fixed-action checks",
+    "native_smk.py: simulated native transport and protected model/transfer checks",
+    "native_smk_ui.mjs: actual page in isolated Chrome with simulated USB; legacy restore; no Windows SMK Web MIDI fallback",
+    "usb_product_names.py: compiled actual UTF-16 descriptor constants for application and updater",
+    "midi_peer_names.mjs: old/new peer names accepted, unrelated MIDI excluded"
+  ],
+  "hardware_validation": "No renamed firmware flashed. Felucca 0.9.29 before the name change passed owner Pro install/control/audio/save/power-cycle/original-restore test.",
+  "release_status": "Local branch only; preserve current published firmware until named builds are packaged and hardware-tested.",
+  "local_target_build": {
+    "product": "SMK-37_930",
+    "bytes": 429376,
+    "sha256": "bc352b29f5ba5d047158995792b691ceddb842e9a3cb91354877016713e95dd1"
+  }
+}

@@ -18,7 +18,7 @@ export async function parsePackage(bytes,expectedSha){
   if(!expectedSha||sha!==expectedSha)throw Error('This package is not the reviewed candidate for this local installer.');
   return {bytes,product,version,sha,format};
 }
-const SMK_PORT=/smk|felucca|sloop|melodee|doom|ota|composite|sinco|usb-midi/i;
+const SMK_PORT=/smk|felucca|sloop|melodee|doom|gamedude|nesynth|ota|composite|sinco|usb-midi/i;
 const doom=id=>id.model==='Doom-SMK-37'||id.model==='ota-Doom-SMK-37';
 const portable=id=>id.model==='SMK-37'||id.model==='ota-SMK-37'||doom(id);
 const START=[0xf0,0x22,0x24,0x35,0x7f,0xf7];

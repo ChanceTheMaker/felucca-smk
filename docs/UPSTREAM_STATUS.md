@@ -1,3 +1,15 @@
+## USB names and original-firmware restore — local candidate
+
+USB product strings now identify the application and FM-1/SMK-37 target, including
+the updater. Existing protocol identifiers and flash/calibration boundaries stay
+unchanged. The Sloop 5c5a40f restore contract is retained/ported: original firmware
+restoration is independent of the helper's custom-release label; custom installs
+match the selected application digest. Peer discovery accepts old and corrected
+names, and Windows Pro remains on the isolated native USB transport.
+
+See `tests/usb_names_restore_validation.json` for evidence and release limits.
+This branch is not published and the renamed firmware is not hardware validated.
+
 ## Felucca SMK 1.6.1 integration candidate - 2026-10-21
 
 Branch `integrate/felucca-1.6.1-smk`, candidate 0.9.29; upstream v1.6.1

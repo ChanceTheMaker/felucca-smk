@@ -111,7 +111,7 @@ async function handshake(link, tries = 3) {
 }
 
 export class Updater {
-  constructor(access, log, portPattern = /fm-1|felucca|ota|composite|sinco|usb-midi/i) {
+  constructor(access, log, portPattern = /fm-1|felucca|sloop|melodee|doom|gamedude|nesynth|ota|composite|sinco|usb-midi/i) {
     this.access = access;
     this.log = log || (() => {});
     this.portPattern = portPattern;
