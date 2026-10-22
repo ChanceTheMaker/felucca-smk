@@ -88,7 +88,7 @@ def emit(**event):print(json.dumps(event),flush=True)
 def worker(stage,directory,expected):
     sys.path[:0]=[str(ROOT/'build/python-deps'),str(ROOT/'tools')]
     import native_smk_wire as wire
-    wire.PORT_RE=re.compile(r'^(?!MIDIIN).*(?:SMK|GameDude|NESynth|Felucca|Felucca|Melodee|USB-Midi|Doom)',re.I)
+    wire.PORT_RE=re.compile(r'^(?!MIDIIN).*(?:SMK|GameDude|NESynth|Felucca|Sloop|Melodee|USB-Midi|Doom)',re.I)
     up=wire.Updater(wire.MidoBackend())
     allowed=lambda i:i.model in ('SMK-37 Pro','ota-SMK-37 Pro','SMK-37','ota-SMK-37','Doom-SMK-37','ota-Doom-SMK-37')
     if stage in ('probe','verify'):

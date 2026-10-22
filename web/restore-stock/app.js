@@ -1,4 +1,4 @@
-import {hasNativeSmk,runNativeSmk,nativeModel} from '../native-smk.js?v=native1';
+import {hasNativeSmk,runNativeSmk,nativeModel} from '../native-smk.js?v=universal-restore1';
 import {requestMidiSession,releaseMidiSession} from '../midi-session.js?v=session1';
 import {createProgress} from '../update-progress.js?v=progress1';
 // SPDX-License-Identifier: GPL-3.0-only
@@ -35,7 +35,7 @@ $('restore').onclick=async()=>{
   if($('restore').disabled)return;busy=true;sync();progress.start();
   try{
     let result;
-    if(await hasNativeSmk(nativeModel(pkg.model))){
+    if(await hasNativeSmk(nativeModel(pkg.model),fetch,'restore')){
       if(!confirm('Restore '+pkg.version+'? Confirm the connected instrument is physically an SMK-37 Pro. This replaces its current firmware. Keep USB and power connected.'))throw Error('Restore cancelled. No update was started.');
       result={identity:await runNativeSmk('restore',log),alreadyStock:false};
     }else{
