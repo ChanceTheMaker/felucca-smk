@@ -6,7 +6,7 @@
 <script src="locales.js"></script><script src="i18n.js"></script><script src="skin.js"></script>
 <script defer src="site-nav.js?v=smk-simulator"></script>
 <script defer src="analytics.js"></script>
-<script type="module" src="smk-version.js?v=0.9.28"></script>
+<script type="module" src="smk-version.js?v=0.9.30"></script>
 <link rel="stylesheet" href="smk37-landing.css">
 <script defer src="studio-preview.js"></script><script defer src="smk37-landing.js"></script><script defer src="panel-guide.js"></script>
 <style>
@@ -54,7 +54,7 @@ main{max-width:1180px;margin:auto;padding:24px}a{color:inherit}:root[data-skin] 
     </dialog>
 <p class="stock-restore-link"><a href="restore-stock/">Restore original M-VAVE firmware</a></p>
 <label><input type="checkbox" id="ack"> I understand this is beta firmware, have backed up my sounds and settings, and accept that a failed installation may require hardware recovery.</label>
-    <p id="native-usb-help" hidden>Windows SMK-37 Pro installs use the <a href="https://github.com/ChanceTheMaker/felucca-smk/tree/v0.9.28#windows-usb-installation">Felucca USB helper</a>. Start it once, then install here. Allow local-network access if Chrome asks.</p><button class="primary" id="install-button" disabled>Install / resume SMK beta</button>
+    <p id="native-usb-help" hidden>Windows SMK-37 Pro installs use the <a href="https://github.com/ChanceTheMaker/felucca-smk/tree/v0.9.30#windows-usb-installation">Felucca USB helper</a>. Start it once, then install here. Allow local-network access if Chrome asks.</p><button class="primary" id="install-button" disabled>Install / resume SMK beta</button>
     <p class="small">Keep USB and device power connected until installation completes. First installation uses your model’s official loader. The prepared package changes application content only. Later Felucca updates enforce application-only writes, excluding calibration, projects and presets.</p>
     <details><summary>Installation log</summary><pre id="log" aria-live="polite"></pre></details>
     <p class="small"><a href="midi-diagnostics.html" target="_blank" rel="noopener">MIDI connection check</a> — collect port names and identity replies without starting an update. Stock Elite/Pro loader trouble? <a href="midi-diagnostics.html#handoff" target="_blank" rel="noopener">Test the loader handoff</a> without starting the flash-writing stage.</p>

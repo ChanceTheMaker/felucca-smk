@@ -52,7 +52,7 @@ def main():
             u=urlparse(self.path)
             if u.path.startswith('/api/smk/'):
                 if not self.api_allowed():self.send_error(403);return
-                if u.path=='/api/smk/capabilities':self.json_reply({'available':bridge.available,'models':['smk-pro'] if bridge.available else [],'protocol':1,'token':api_token,'restore_product':'SMK-37 Pro_016','application_sha256':application_sha256(),'app':'felucca-smk','firmware':'SMK-37_928'});return
+                if u.path=='/api/smk/capabilities':self.json_reply({'available':bridge.available,'models':['smk-pro'] if bridge.available else [],'protocol':1,'token':api_token,'restore_product':'SMK-37 Pro_016','application_sha256':application_sha256(),'app':'felucca-smk','firmware':'SMK-37_930'});return
                 if u.path.startswith('/api/smk/jobs/'):
                     job=bridge.status(u.path.removeprefix('/api/smk/jobs/'))
                     self.json_reply(job if job else {'error':'Unknown operation'},200 if job else 404);return

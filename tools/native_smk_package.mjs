@@ -16,7 +16,7 @@ if(action==='restore'){
   image=smkLogicalImage(stock).raw;packet=original.bytes;expected=original.product;
 }else{
   const release=JSON.parse(await fs.readFile(path.join(root,'web/firmware/public-release.json'),'utf8'));
-  if(release.product!=='SMK-37_928'||release.app!=='felucca-smk-0.9.28-app.bin'||release.sha256!=='b53614f3420d80bdc7ad31cf5b1d20ed35b4063fba4d64b70b1226c6bc498ab9')throw Error('Unrecognized Felucca public release');
+  if(release.product!=='SMK-37_930'||release.app!=='felucca-smk-0.9.30-app.bin'||release.sha256!=='e8ff418cb1eba18b92dd43b22eca08d8bd6e1e5165596c2775c08d749cf5b488')throw Error('Unrecognized Felucca public release');
   const app=new Uint8Array(await fs.readFile(path.join(root,'web/firmware',release.app)));
   const built=await buildSmkPublicPackage(stock,app,release);
   if(built.stockModel!=='SMK-37 Pro')throw Error('Incorrect physical model');
