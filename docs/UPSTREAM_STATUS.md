@@ -1,3 +1,7 @@
+## 2026-10-21: 0.9.30 release
+
+Felucca 1.6.1 plus corrected USB names and universal OG restore promoted after the owner Pro native install/audio/editor/OG-return check. Final application SHA-256 `e8ff418cb1eba18b92dd43b22eca08d8bd6e1e5165596c2775c08d749cf5b488`; see docs/smk37/FELUCCA_1_6_1.md for exact evidence and untested cases. No upstream contribution submitted.
+
 ## USB names and original-firmware restore — local candidate
 
 USB product strings now identify the application and FM-1/SMK-37 target, including

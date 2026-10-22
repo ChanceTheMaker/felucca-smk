@@ -1,25 +1,25 @@
 {
   "public": true,
-  "version": "Felucca SMK 0.9.28 Beta",
-  "product": "SMK-37_928",
-  "app": "felucca-smk-0.9.28-app.bin",
-  "bytes": 420796,
-  "sha256": "b53614f3420d80bdc7ad31cf5b1d20ed35b4063fba4d64b70b1226c6bc498ab9",
+  "version": "Felucca SMK 0.9.30 Beta",
+  "product": "SMK-37_930",
+  "app": "felucca-smk-0.9.30-app.bin",
+  "bytes": 429376,
+  "sha256": "e8ff418cb1eba18b92dd43b22eca08d8bd6e1e5165596c2775c08d749cf5b488",
   "supported_models": [
     "SMK-37 Pro",
     "SMK-37 Elite"
   ],
   "stock_version": "016",
-  "upstream_version": "1.5.1",
-  "upstream_revision": "a4d7ca2e5d52a4c35e2468401f00d883cadbda03",
-  "hardware_validation": "SMK Pro with measured flash ID 856014: installed and restarted as SMK-37_928; bad header rejected before erase with diagnostic error 2; restored original Pro 016 and verified restart identity. EB6014 and Elite hardware validation remain pending. Published with owner authorization after this round trip.",
-  "source": "https://github.com/ChanceTheMaker/felucca-smk/tree/v0.9.28",
+  "upstream_version": "1.6.1",
+  "upstream_revision": "a53ecf428c29c780108fd70a31b71a32a6b5c313",
+  "hardware_validation": "SMK Pro: final 0.9.30 installed and restarted as SMK-37_930; version query and corrected Windows MIDI name verified; saved conditional-step project loaded; palette/live-panel replies and stereo USB audio verified; restored original Pro 016 and verified restart. The 0.9.29 foundation passed owner controls/sound and save/power-cycle checks. Elite/EB6014, final-build cold power-cycle and physical Chrome disconnect testing remain unverified.",
+  "source": "https://github.com/ChanceTheMaker/felucca-smk/tree/v0.9.30",
   "license": "GPL-3.0-only",
   "preset_storage": {
     "slots": 32,
     "fallback_slots": 8,
     "migration": "Preserves the original eight-slot bank; uses expanded space only when blank or recognized."
   },
-  "source_archive": "https://github.com/ChanceTheMaker/felucca-smk/archive/refs/tags/v0.9.28.zip",
+  "source_archive": "https://github.com/ChanceTheMaker/felucca-smk/releases/download/v0.9.30/felucca-smk-0.9.30-source.zip",
   "remote_panel_protocol": 4
 }

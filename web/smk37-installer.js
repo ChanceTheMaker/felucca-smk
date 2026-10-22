@@ -65,7 +65,7 @@ try{
     document.getElementById('release').textContent=release.migration?'Felucca SMK 0.9.22 Beta - local migration':release.version;
   }else{
     release=JSON.parse(new TextDecoder().decode(await fetchBytes('./firmware/public-release.json')));
-    if(release.public!==true||release.product!=='SMK-37_928'||release.app!=='felucca-smk-0.9.28-app.bin'||!/^[a-f0-9]{64}$/.test(release.sha256))throw Error('Invalid public release metadata.');
+    if(release.public!==true||release.product!=='SMK-37_930'||release.app!=='felucca-smk-0.9.30-app.bin'||!/^[a-f0-9]{64}$/.test(release.sha256))throw Error('Invalid public release metadata.');
     document.getElementById('release').textContent=release.version;
     prepare();
   }

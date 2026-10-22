@@ -151,3 +151,9 @@ not a browser installer or Chrome disconnect validation. Elite, FM-1,
 long-run timing and detailed physical testing of every new tool remain untested.
 Nothing was published. A separate naming correction is being prepared and
 must not be conflated with this tested application hash.
+
+## Public 0.9.30 release validation ? 2026-10-21
+
+The final build is 429376 bytes, SHA-256 `e8ff418cb1eba18b92dd43b22eca08d8bd6e1e5165596c2775c08d749cf5b488`. It reports `Felucca SMK 0.9.30 Beta` and `SMK-37_930`. On the owner Pro it installed and restarted, Windows MIDI enumeration reported `Felucca SMK-37`, the existing conditional-step project loaded with FILL preserved, palette/live-panel queries replied, and generated MIDI notes produced non-silent stereo USB audio. Native restore completed and restart identity was `SMK-37 Pro_016`.
+
+This follows the 0.9.29 controls/sound/save/cold-restart validation above. Cold power-cycle on final 0.9.30, physical Chrome disconnect, Elite/EB6014 and long-run validation were not repeated. Windows audio endpoint labels may remain cached as Felucca. No USB VID/PID, protected flash ranges or radio code changed. Private package/audio/log evidence stays in build/hardware-930; no vendor packages or private device data are published.

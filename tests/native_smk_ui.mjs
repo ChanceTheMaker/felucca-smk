@@ -5,7 +5,7 @@ import path from 'node:path';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const base='https://chancethemaker.github.io/felucca-smk/';
 const helper='http://127.0.0.1:8893',token='t'.repeat(43);
-const appHash="b53614f3420d80bdc7ad31cf5b1d20ed35b4063fba4d64b70b1226c6bc498ab9";
+const appHash="e8ff418cb1eba18b92dd43b22eca08d8bd6e1e5165596c2775c08d749cf5b488";
 const types={'.js':'text/javascript','.html':'text/html','.css':'text/css','.json':'application/json','.svg':'image/svg+xml'};
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
@@ -35,14 +35,14 @@ try{
   const req=route.request(),url=new URL(req.url());
   if(url.pathname.endsWith('/capabilities')){
    probes++;if(mode==='absent')return route.abort('connectionrefused');
-   return route.fulfill({json:{available:true,models:['smk-pro'],protocol:1,token,application_sha256:mode==='legacy'?undefined:appHash,app:mode==='wrong'?'other-app':'felucca-smk',firmware:'SMK-37_928'}});
+   return route.fulfill({json:{available:true,models:['smk-pro'],protocol:1,token,application_sha256:mode==='legacy'?undefined:appHash,app:mode==='wrong'?'other-app':'felucca-smk',firmware:'SMK-37_930'}});
   }
   if(req.method()==='POST'){
    assert.equal(req.headers()['x-felucca-token'],token);
    const body=req.postDataJSON();assert.deepEqual(body,{action:body.action,model:'smk-pro',app:'felucca-smk'});
    actions.push(body.action);return route.fulfill({json:{id:'test-job'}});
   }
-  return route.fulfill({json:{state:mode==='error'?'error':'done',error:'Simulated USB interruption',phase:'reboot',logs:['Simulated restart verification'],identity:actions.at(-1)==='restore'?'SMK-37 Pro_016':'SMK-37_928'}});
+  return route.fulfill({json:{state:mode==='error'?'error':'done',error:'Simulated USB interruption',phase:'reboot',logs:['Simulated restart verification'],identity:actions.at(-1)==='restore'?'SMK-37 Pro_016':'SMK-37_930'}});
  });
  await page.goto(base);await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('ready.'));
  assert.equal(probes,0,'No helper access during page loading');
