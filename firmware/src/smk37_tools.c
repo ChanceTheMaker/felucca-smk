@@ -25,7 +25,8 @@ static void smk37_pattern_undo(void) {
     for(unsigned i=0;i<4;++i){int16_t v=t->p[P_SLEN+i];t->p[P_SLEN+i]=smk37_undo.timing[i];smk37_undo.timing[i]=v;}
     smk37_notice="UNDO / REDO";smk37_notice_at=fm1_ms;
 }
-static void ui_message(const char *s){smk37_notice=s;smk37_notice_at=fm1_ms;}
+static char smk37_message[64];
+static void ui_message(const char *s){str_cpy(smk37_message,s,sizeof smk37_message);smk37_notice=smk37_message;smk37_notice_at=fm1_ms;}
 static uint32_t steps_sig(const track_t *t){
     uint32_t h=2166136261u;const uint8_t *p=(const uint8_t *)t->step;
     for(unsigned i=0;i<sizeof t->step;++i)h=(h^p[i])*16777619u;return h;
@@ -100,11 +101,19 @@ static void grid_acc(track_t *t, uint32_t i, uint32_t l, uint32_t on)
 
 #define FELUCCA_TOOLS_UNDO(t) smk37_pattern_take(t)
 #define FELUCCA_TOOLS_STEPS smk37_undo.step
+/* SMK has spare ordinary RAM; keep these two new tool buffers out of the
+ * pool shared with the remote screen. Linker boundaries remain unchanged. */
+#define FELUCCA_TOOLS_SCRATCH
+#define FELUCCA_TOOLS_LANE smk37_lane
 #include "ui_tools.c"
+#undef FELUCCA_TOOLS_LANE
+#undef FELUCCA_TOOLS_SCRATCH
 #undef FELUCCA_TOOLS_UNDO
 #undef FELUCCA_TOOLS_STEPS
 static void smk37_tool_action(void){
     if(chain.running || chain.armed){ui_message("STOP SONG FIRST");return;}
+    if(smk37_tool==TL_N){ui_message("HOLD > FOR FILL");return;}
     if(!tl_cell(TSEL,smk37_tool)){ui_message("DRUM TOOL / SELECT DRUM");return;}
+    if(smk37_tool==TL_EUCLID){eu_open(TSEL);smk37_page=SMK37_EUCLID_PAGE;return;}
     const char *s=tl_do(TSEL,smk37_tool,smk37_lane);if(s)ui_message(s);
 }

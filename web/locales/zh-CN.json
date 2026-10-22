@@ -503,5 +503,16 @@
   "ui.smkInstallerTitle": "Felucca SMK — 安装器",
   "ui.smkStudioTitle": "Felucca SMK Studio",
   "ui.audioVersionMismatch": "浏览器音源和 Studio 的版本不一致。请重新加载此页面以获取匹配的音频文件。",
-  "editor.smkSampleSetup": "没有已启用的采样槽。在支持采样存储的固件中，请在 SMK 上打开 NAVIGATE → SYSTEM → SAMPLE STORAGE，初始化后重新连接。初始化会替换原厂采样数据，请保留原厂备份。"
+  "editor.smkSampleSetup": "没有已启用的采样槽。在支持采样存储的固件中，请在 SMK 上打开 NAVIGATE → SYSTEM → SAMPLE STORAGE，初始化后重新连接。初始化会替换原厂采样数据，请保留原厂备份。",
+  "editor.condition": "条件",
+  "editor.customPalette": "自定义配色",
+  "editor.paletteBackground": "背景",
+  "editor.paletteSurface": "面板",
+  "editor.paletteText": "文本",
+  "editor.paletteTheme": "主题",
+  "editor.paletteAccent": "强调色",
+  "editor.palettePreview": "预览",
+  "editor.paletteSave": "保存配色",
+  "editor.paletteRemove": "删除",
+  "editor.paletteCancel": "取消预览"
 }

@@ -50,7 +50,9 @@ static void smk37_slice_wave(const slc_src_t *src){
 }
 static void smk37_workflow_panel(unsigned page){
     char text[40];
-    if(page==SMK37_STORAGE_PAGE){
+    if(page==SMK37_EUCLID_PAGE){panel_note("EUCLID: EVENLY SPACED HITS","K5 HITS / K6 STEPS / K7 ROT",eu.on?"< CANCEL / > APPLY":"> START / K8 DRUM LANE");}
+    else if(page==SMK37_MIDI_CHANNEL_PAGE){panel_note("ONE MIDI CHANNEL PER TRACK","SET MIDI IN TO TRACK","OMNI: UNASSIGNED / OFF: NONE");}
+    else if(page==SMK37_STORAGE_PAGE){
         if(!SMK37_ENABLE_SAMPLES)panel_note("SAMPLE STORAGE DISABLED","THIS BUILD HAS NO UPLOADS",0);
         else if(smk37_samples_owned)panel_note("3 USER SLOTS / 80 KIB EACH","UPLOAD IN STUDIO > SAMPLES",0);
         else if(smk37_samples_state==3)panel_note("STORAGE CHECK FAILED","EXISTING DATA PRESERVED",0);
@@ -110,6 +112,8 @@ static void smk37_workflow_card(unsigned page,unsigned c,const char **label,char
     if(page==SMK37_STORAGE_PAGE){static const char *const sn[]={"STATUS","SLOTS","SIZE","> INIT"};names=sn;
         if(!c)str_cpy(value,smk37_samples_owned?"READY":smk37_samples_state==3?"LOCKED":SMK37_ENABLE_SAMPLES?"SETUP":"OFF",24);
         if(c==1)fmt_int(value,smk37_samples_owned?3:0);if(c==2){fmt_int(value,80);*unit="KIB";}}
+    if(page==SMK37_EUCLID_PAGE){static const char *const en[]={"HITS","STEPS","ROTATE","DRUM LANE"};names=en;fmt_int(value,c==0?eu.hits:c==1?eu.steps:c==2?eu.rot:smk37_lane+1);}
+    if(page==SMK37_MIDI_CHANNEL_PAGE){static const char *const mn[]={"T1 CHANNEL","T2 CHANNEL","T3 CHANNEL","T4 CHANNEL"};names=mn;unsigned ch=mch_get(c);if(ch<16)fmt_int(value,ch+1);else str_cpy(value,ch==MCH_OMNI?"OMNI":"OFF",24);}
     if(page==SMK37_NAV_PAGE){names=wf_names_0;if(!c)str_cpy(value,smk37_groups[smk37_nav_group],24);else if(c==1)fmt_int(value,smk37_nav_row+1);}
     if(page==SMK37_PREF_PAGE){names=wf_names_1;if(!c)str_cpy(value,smk37_pref_names[smk37_pref_row],24);if(c==1)smk37_pref_format(smk37_pref_row,value);}
     if(page==SMK37_BROWSER_PAGE){names=wf_names_2;

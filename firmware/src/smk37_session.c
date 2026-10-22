@@ -24,6 +24,7 @@ static void smk37_session_capture(void) {
     memset(p,0,sizeof *p);p->magic=PROJ_MAGIC;p->size=sizeof *p;
     p->parts=NPART;p->phys=PROJ_PHYS;p->sel=song.sel;p->chain=chain_config;p->motion=motion;
     memcpy(p->g,song.g,sizeof p->g);
+    memcpy(p->mch,song.mch,sizeof p->mch);
     for(unsigned k=0;k<NTRK;++k){
         memcpy(p->t[k].p,trk[k].p,sizeof trk[k].p);
         memcpy(p->t[k].step,trk[k].step,sizeof trk[k].step);
@@ -66,6 +67,7 @@ static int smk37_session_restore(void) {
         memcpy(t->step,p->t[k].step,sizeof t->step);
         uint8_t values[FP_SIZE+1];fm6_unpack(p->fm6[k],values);fm6_set_patch(k,values);fm6_adopt(k);
     }
+    memcpy(song.mch,p->mch,sizeof song.mch);midi_route=MIDI_ROUTE_AGAIN;
     smk37_song_row=0;smk37_undo.valid=0;smk37_sound_undo.valid=0;
     chain_config=p->chain;motion=p->motion;memset(motion_active,0,sizeof motion_active);motion_base_valid=0;
     song.sel=p->sel%NTRK;song.octave=smk37_session.octave-3;

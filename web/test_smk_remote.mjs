@@ -126,6 +126,7 @@ await page.addInitScript(({frames,fixture})=>{
     else {data=batches.at(-1).slice(0,104);data.fill(0,94,104);}
     data[4]=a[4];reply=[240,125,70,76,cmd,...data,247];
   }else if(cmd===126){let data=a[3]===0?fixture.state.slice():a[3]===2?fixture.tiles[a[5]].slice():a[3]===3?fixture.dirty.slice():a[3]===4?fixture.compactTiles[a[5]].slice():[...a.slice(0,5),0];data[4]=a[4];reply=[240,125,70,76,cmd,...data,247];}
+  if(cmd===80)reply=[240,125,70,76,cmd,...fixture.palette,247];
   if(cmd===72)reply=[240,125,70,76,cmd,...fixture.menus[a[0]],247];
   if(cmd===37)reply=[240,125,70,76,cmd,0,...a,...Array(a[3]).fill(0),247];
   if(cmd===6){reply=frames.find(f=>f[4]===6).slice();reply[5]=a[0];}

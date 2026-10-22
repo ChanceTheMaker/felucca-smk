@@ -60,7 +60,11 @@ static const page_t smk37_sound_pages[] = {
     {"PHRASES",0,SC_TRACK,GR_NONE,{255,255,255,255}},
     {"SAMPLE STORAGE",0,SC_TRACK,GR_NONE,{255,255,255,255}},
 
+    {"EUCLID",0,SC_TRACK,GR_NONE,{255,255,255,255}},
+    {"MIDI CHANNELS",0,SC_TRACK,GR_NONE,{255,255,255,255}},
 };
+#define SMK37_EUCLID_PAGE 54u
+#define SMK37_MIDI_CHANNEL_PAGE 55u
 #define SMK37_PHRASE_PAGE 52u
 #define SMK37_STORAGE_PAGE 53u
 #define SMK37_NAV_PAGE 43u
@@ -120,6 +124,9 @@ static unsigned smk37_wrap(unsigned value, int direction, unsigned count)
 
 static uint8_t smk37_undo_loading;
 static void smk37_sound_take(track_t *,unsigned);
+static uint32_t palette_cur(void);
+static uint32_t palette_n(void);
+static void smk37_pref_set(unsigned,unsigned);
 static int smk37_workflow_turn(unsigned,int);
 static int smk37_workflow_button(unsigned);
 static unsigned smk37_next_page(unsigned,int);
@@ -218,7 +225,7 @@ static void smk37_turn(unsigned encoder, int direction)
             return;
         }
         if(smk37_page==SMK37_TOOLS_PAGE){
-            if(encoder==4){do{smk37_tool=smk37_wrap(smk37_tool,direction,12);}while(smk37_tool==7);}
+            if(encoder==4){smk37_tool=smk37_wrap(smk37_tool,direction,15);}
             if(encoder==5)smk37_lane=smk37_wrap(smk37_lane,direction,NLANE);return;
         }
         if(smk37_page==SMK37_PRESET_PAGE){if(encoder==4)smk37_user_slot=smk37_wrap(smk37_user_slot,direction,smk37_user_capacity);return;}
@@ -233,7 +240,7 @@ static void smk37_turn(unsigned encoder, int direction)
         if (smk37_page==SMK37_DETAIL_PAGE) {
             smk37_pattern_gesture(t,smk37_page*512+smk37_edit_step*4+encoder);
             step_t *s=&t->step[smk37_edit_step];
-            if(encoder==4)step_set_chance(s,clamp((int)step_chance(s)+direction,0,100));
+            if(encoder==4)step_set_chance_v(s,clamp((int)step_chance_v(s)+direction,0,CHANCE_V_MAX));
             if(encoder==5)step_set_ratchet(s,clamp((int)step_ratchet(s)+direction,1,4));
             if(encoder==6)step_set_nudge(s,clamp(step_nudge(s)+direction,-8,7));
             if(encoder==7)s->vel=clamp(s->vel+direction,1,127);
@@ -252,7 +259,7 @@ static void smk37_turn(unsigned encoder, int direction)
             return;
         }
         if(smk37_page==SMK37_DISPLAY_PAGE){
-            if(encoder==4)smk37_palette=smk37_wrap(smk37_palette,direction,23);
+            if(encoder==4)smk37_pref_set(0,smk37_wrap(palette_cur(),direction,palette_n()));
             if(encoder==5)smk37_bold=direction>0;
             return;
         }

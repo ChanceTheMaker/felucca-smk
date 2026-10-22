@@ -3,6 +3,9 @@
  * test. All note/chord ownership and synthesis reuse Felucca's actual engine.
  * The hardware scanner must call smk37_key_event from the audio consumer,
  * never from a nested scanner IRQ. */
+/* The upstream second-core startup is FM-1-specific; SMK keeps its validated
+ * serial audio path until a board-specific implementation is verified. */
+#define FELUCCA_CPU2 0
 #define FELUCCA_KEY_BASE 48
 #define FELUCCA_PIANO_KEYS 37u
 #define FELUCCA_KEY_COUNT 53u /* 37 piano keys plus 16 independent pad owners */
@@ -86,6 +89,7 @@ static unsigned smk37_learn_set(unsigned cc,unsigned track,unsigned id) {
 #include "smk37_phrases.c"
 #include "smk37_workflow.c"
 static void smk37_performance_poll(void) {
+    if(eu.on && (smk37_page!=SMK37_EUCLID_PAGE || eu.trk!=song.sel))eu_close(TSEL,1);
     for(unsigned k=0;k<NTRK;++k)if(mpc_io[k]){
         unsigned n=mpc_io[k]&127u;mpc_io[k]=0;track_t *t=&trk[k];
         if(t->eng_req==ENGI_DRUM){const param_desc_t *d=param_desc_of(ENGI_DRUM,P_E0);

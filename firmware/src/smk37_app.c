@@ -460,7 +460,7 @@ static void smk37_editor_service(void)
             if(!rc && op==0)rc=smk37_session_load(slot);
             if(!rc){smk37_ed_begin(9);smk37_ed_byte(op);smk37_ed_byte(slot);smk37_ed_byte(smk37_session_used(slot));n=smk37_ed_finish();}
         }else if(count>=4 && frame[0]==0x7d && frame[1]==0x46 && frame[2]==0x4c &&
-            (frame[3]==72 || frame[3]==73 || frame[3]==33 || (SMK37_ENABLE_SAMPLES&&frame[3]>=11&&frame[3]<=15) || (frame[3]>=34&&frame[3]<=38) || (frame[3]>=16&&frame[3]<=21) || ((frame[3]==68||frame[3]==69)&&count>=6&&frame[4]==3))){
+            (frame[3]==80 || frame[3]==81 || frame[3]==72 || frame[3]==73 || frame[3]==33 || (SMK37_ENABLE_SAMPLES&&frame[3]>=11&&frame[3]<=15) || (frame[3]>=34&&frame[3]<=38) || (frame[3]>=16&&frame[3]<=21) || ((frame[3]==68||frame[3]==69)&&count>=6&&frame[4]==3))){
             n=smk37_editor_main_command(frame,count);ota_frame_done();
         }else{
             fm1_irq_off();n=smk37_editor_handle(frame,count);fm1_irq_on();ota_frame_done();
@@ -581,10 +581,11 @@ static void smk37_status(void)
 #if SMK37_REMOTE_PANEL
     if(smk37_remote_refresh){smk37_remote_refresh=0;shown_page=UINT32_MAX;}
 #endif
+    static unsigned shown_palette_generation=UINT32_MAX;
     static unsigned shown_palette=UINT32_MAX,shown_bold=UINT32_MAX,shown_style=UINT32_MAX,shown_large=UINT32_MAX;
-    if(shown_palette!=smk37_palette || shown_bold!=smk37_bold || shown_style!=smk37_style || shown_large!=smk37_large){
+    if(shown_palette_generation!=smk37_palette_generation || shown_palette!=smk37_palette || shown_bold!=smk37_bold || shown_style!=smk37_style || shown_large!=smk37_large){
         ux.style=smk37_style?ST_LINE:ST_FLAT;shown_style=smk37_style;shown_large=smk37_large;
-        palette_set(smk37_palette);font_set(smk37_bold);shown_palette=smk37_palette;shown_bold=smk37_bold;shown_page=UINT32_MAX;
+        smk37_palette_apply();font_set(smk37_bold);shown_palette=smk37_palette;shown_palette_generation=smk37_palette_generation;shown_bold=smk37_bold;shown_page=UINT32_MAX;
     }
     static uint8_t sleeping;
     static const uint32_t timeout[]={0,300000,900000,1800000,3600000};

@@ -38,7 +38,7 @@ API void synth_init(void){
     memset(browser_flash,255,sizeof browser_flash);smk37_synth_init();
     smk37_storage_ready=smk37_storage_writable=smk37_samples_owned=1;
     smk37_up_boot();for(unsigned k=0;k<3;k++)smp_user_scan(k);
-    palette_set(smk37_palette);font_set(smk37_bold);smk37_analog_playback(analog,15);
+    smk37_palette_apply();font_set(smk37_bold);smk37_analog_playback(analog,15);
 }
 static void service(void){
     smk37_hold_poll();smk37_performance_poll();
@@ -65,11 +65,11 @@ API void fw_event(unsigned kind,unsigned id,int value){
 }
 API void fw_release(void){
     smk37_sustain(0);for(unsigned k=0;k<37;k++)smk37_play_key_event(k,0);for(unsigned k=0;k<16;k++)smk37_pad_event(k,0);
-    held_keys=held_pads=smk37_button_down=smk37_button_held=0;
+    held_keys=held_pads=smk37_button_down=smk37_button_held=0;seq_fill=smk37_fill_down=0;
     for(unsigned ch=0;ch<16;ch++){midi_control(ch,64,0);midi_control(ch,120,0);}
     smk37_local_bend=0;smk37_wheels(0,smk37_local_mod,15);
 }
-API uint16_t *fw_screen(void){palette_set(smk37_palette);font_set(smk37_bold);smk37_sound_status();return screen;}
+API uint16_t *fw_screen(void){smk37_palette_apply();font_set(smk37_bold);smk37_sound_status();return screen;}
 API uint32_t *fw_status(void){status[0]=smk37_indicator_status();status[1]=(uint32_t)held_keys;status[2]=(uint32_t)(held_keys>>32);status[3]=held_pads;status[4]=smk37_page;status[5]=song.sel;status[6]=song.playing;status[7]=smk37_knob_bank;status[8]=smk37_fader_bank;status[9]=song.octave+3;status[10]=smk37_pad_bank;status[11]=song.master_q12;for(unsigned i=0;i<4;i++)status[12+i]=(smk37_fader_bank?TSEL->p[P_ATK+i]:trk[i].p[P_LEVEL])*1023u/127u;return status;}
 API uint8_t *fw_request(void){return request;}
 API uint8_t *fw_reply(void){return smk37_ed_out;}
