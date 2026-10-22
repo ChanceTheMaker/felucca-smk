@@ -440,7 +440,7 @@ const CMD = { INFO: 1, GET: 2, SET: 3, DUMP: 4, DESC: 5, STEP_GET: 6, STEP_SET: 
   WATCH: 22, CHANGED: 23, RELOAD: 24, PING: 25, STEP_CHANGED: 26,
   TRACK: 27, TRACK_MIX: 28, TRACK_DUMP: 29, TRACK_STEP: 30,
   TRACK_PARAM: 31, TRACK_CHANGED: 32, SONG: 33,
-  UI_STATE: 34, UI_SET: 35, UI_PALETTES: 36, FAV_GET: 37, FAV_SET: 38,
+  PALETTE_GET: 80, PALETTE_SET: 81, UI_STATE: 34, UI_SET: 35, UI_PALETTES: 36, FAV_GET: 37, FAV_SET: 38,
   MOTION: 64, BACKUP_LIST: 65, BACKUP_GET: 66, BACKUP_PUT: 67,
   FM6_GET: 68, FM6_PUT: 69, FM6_LIST: 70, FM6_ERASE: 71, MENU_DESC: 72, MENU_SET: 73 };
 /* frames the device sends on its own (while WATCH is on); never replies */
@@ -499,6 +499,8 @@ function readHits(r, o) {
   if (o.ratchet < 1 || o.ratchet > 4) throw new Error("Invalid step ratchet");
   o.nudge = r.i < r.a.length ? r.b()-8 : 0;
   if(o.nudge < -8 || o.nudge > 7)throw new Error("Invalid step nudge");
+  o.condition = r.i < r.a.length ? r.b() : 0;
+  if(o.condition>11)throw new Error("Invalid step condition");
   return o;
 }
 
@@ -550,6 +552,8 @@ const parse = {
         if(tag===0x60){o.remotePanel=v>=1;o.remotePanelDelta=v>=2;o.remotePanelBatch=v>=3;o.remotePanelRect=v>=4;}
         if(tag===0x50 && o.fm6)o.fm6.caps=v;
         if(tag===0x54)o.nudge=v;
+        if(tag===0x4b)o.conditions=v;
+        if(tag===0x45)o.customPalette=v;
         if(tag===0x43)o.learnMax=v;
         if(tag===0x4c)o.locks=!!v;
         if(tag===0x41)o.motionMax=v+(trailer[p+3]<<7);
@@ -574,6 +578,8 @@ const parse = {
     o.favoriteSig = u28(); o.bankSig = u28(); return o;
   },
   [CMD.UI_SET](a) { const r = new Reader(a); return { rc: r.b(), id: r.b(), value: r.b(), ...parse[CMD.UI_STATE](a.slice(3)) }; },
+  [CMD.PALETTE_GET](a) {const r=new Reader(a),flags=r.b(),n=r.b();if(n!==5)throw new Error("Invalid palette size");const colors=Array.from({length:5},()=>{const red=r.b(),green=r.b(),blue=r.b();if(red>31||green>63||blue>31)throw new Error("Invalid palette color");return "#"+[Math.round(red*255/31),Math.round(green*255/63),Math.round(blue*255/31)].map(v=>v.toString(16).padStart(2,"0")).join("");});return {flags,colors};},
+  [CMD.PALETTE_SET](a) {return {rc:a[0],...parse[CMD.PALETTE_GET](a.slice(1))};},
   [CMD.UI_PALETTES](a) { const r = new Reader(a), n = r.b(); return Array.from({ length: n }, () => r.s()); },
   [CMD.FAV_GET](a) {
     const r = new Reader(a), rc = r.b(); if (rc) return { rc };
@@ -716,6 +722,8 @@ const req = {
   menuSet: (id,value) => [CMD.MENU_SET,[id,...v14enc(value)]],
   uiState: () => [CMD.UI_STATE, []],
   uiSet: (id, value) => [CMD.UI_SET, [id, value]],
+  paletteGet: () => [CMD.PALETTE_GET, []],
+  paletteSet: (op,colors=[]) => {if(![0,1,2,3].includes(op)||op<2 && colors.length!==5)throw new Error("Invalid palette");return [CMD.PALETTE_SET,[op,...(op<2?colors.flatMap(c=>{if(!/^#[0-9a-f]{6}$/i.test(c))throw new Error("Invalid color");return [31,63,31].map((max,i)=>Math.round(parseInt(c.slice(1+i*2,3+i*2),16)*max/255));}):[])]];},
   uiPalettes: () => [CMD.UI_PALETTES, []],
   favGet: (engine, start, count) => [CMD.FAV_GET, [engine, ...v14enc(start), count]],
   favSet: (engine, preset, on) => [CMD.FAV_SET, [engine, ...v14enc(preset), on ? 1 : 0]],
@@ -732,7 +740,8 @@ const req = {
       ...(st.hit == null && st.chance == null ? [] : hitsEnc(st.hit | 0, st.acc | 0)),
       ...(st.chance == null ? [] : [Math.max(0, Math.min(100, st.chance | 0))]),
       ...(st.chance == null || st.ratchet == null ? [] : [Math.max(1, Math.min(4, st.ratchet | 0))]),
-      ...(st.chance == null || st.ratchet == null || st.nudge == null ? [] : [Math.max(0,Math.min(15,(st.nudge|0)+8))])]];   /* (only after the chance) */
+      ...(st.chance == null || st.ratchet == null || st.nudge == null ? [] : [Math.max(0,Math.min(15,(st.nudge|0)+8))]),
+      ...(st.chance == null || st.ratchet == null || st.nudge == null || st.condition == null ? [] : [Math.max(0,Math.min(11,st.condition|0))])]];   /* (only after the chance) */
   },
   preset: (e, p) => [CMD.PRESET, [e & 0x7F, p & 0x7F]],
   project: (op, slot) => { if (![0, 1, 2].includes(op)) throw new Error("bad PROJECT op"); return [CMD.PROJECT, [op, slot & 3]]; },   /* 0 load, 1 save, 2 query */
@@ -913,7 +922,7 @@ function fmtValue(d, v) {
   const sign = (x) => (x > 0 ? "+" + x : String(x));
   switch (d.fmt) {
     case F.PCT: return [String(d.max === 100 ? v : Math.trunc((v * 100 + 63) / 127)), "%"];   /* 0..100 (SWG): the value */
-    case F.BIPCT: return [sign(Math.trunc(v * 100 / 64)), "%"];
+    case F.BIPCT: return [sign(Math.trunc(v * 100 / (v > 0 ? 63 : 64))), "%"];   /* (1.5.5: +100 at the top, as the device) */
     case F.TIME: {
       const ms10 = Math.round(10 * Math.pow(10000, (v & 127) / 127));
       if (ms10 < 100) return [(ms10 / 10).toFixed(1), "ms"];
@@ -1791,7 +1800,7 @@ function makeMockDevice(opt = {}) {
   const D = (label, fmt, min, max, def, names = null, unit = "") => ({ label, fmt, min, max, def, names, unit });
   const E = (label, names, def) => D(label, F.ENUM, 0, names.length - 1, def, names);
   const MSRC = ["OFF", "LFO", "ENV", "VEL", "KEY", "RAND", "MODW", "AT", "EXPR", "S&H", "SLEW"];   /* (append-only: S&H SLEW, #132) */
-  const MDST = ["OFF", "PITCH", "CUT", "SHP", "AMP", "PAN", "DIST", "CHO", "DLY", "REV", "RATE", "VIB", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "DEPTH"];   /* (DEPTH: #132) */
+  const MDST = ["OFF", "PITCH", "CUT", "SHP", "AMP", "PAN", "DIST", "CHO", "DLY", "REV", "RATE", "VIB", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "DEPTH", "VEL", "TIME"];   /* (DEPTH: #132; VEL TIME: 1.5.6, #213) */
   const TP = [
     D("LVL", F.DB, 0, 127, 104),
     D("ATK", F.TIME, 0, 127, 10), D("DEC", F.TIME, 0, 127, 70), D("SUS", F.PCT, 0, 127, 90), D("REL", F.TIME, 0, 127, 60),
@@ -1800,7 +1809,7 @@ function makeMockDevice(opt = {}) {
     D("PIT", F.BIPCT, -64, 63, 0), D("FLT", F.BIPCT, -64, 63, 0), D("SHP", F.BIPCT, -64, 63, 0), D("AMP", F.PCT, 0, 127, 0),
     E("MODE", ["OFF", "UP", "DN", "UPDN", "RND", "ORD", "REPEAT", "DNUP", "UP+8", "CONV", "DIVG", "PINKY", "THUMB", "WALK", "CHORD"], 0), E("RATE", NDIV, 2), D("OCT", F.INT, 1, 4, 1), D("GATE", F.PCT, 1, 127, 64),
     D("SWG", F.PCT, 0, 100, 0), D("PROB", F.PCT, 0, 127, 127), E("HOLD", NONOFF, 0), E("ORD", ["NOTE", "PLAY"], 0),
-    D("ROOT", F.NOTE, 0, 11, 0), E("SCL", ["CHR", "MAJ", "MIN", "DOR", "MIX", "PEN", "MPEN", "HARM", "PHRY", "LYD", "LOC", "MEL", "BLUES", "WHOLE", "DIMHW", "DIMWH"], 0), E("QNT", ["OFF", "SNAP", "WHITE", "SEQ"], 0), D("TRN", F.SEMI, -24, 24, 0),
+    D("ROOT", F.NOTE, 0, 11, 0), E("SCL", ["CHR", "MAJ", "MIN", "DOR", "MIX", "PEN", "MPEN", "HARM", "PHRY", "LYD", "LOC", "MEL", "BLUES", "WHOLE", "DIMHW", "DIMWH"], 0), E("QNT", ["OFF", "SNAP", "WHITE", "SEQ", "SEQ+T"], 0), D("TRN", F.SEMI, -24, 24, 0),
     D("LEN", F.STEPS, 1, 64, 16), E("DIV", NDIV, 2), D("SWG", F.PCT, 0, 100, 0), D("GATE", F.PCT, 1, 127, 64),
     D("DST", F.PCT, 0, 127, 0), D("CHO", F.PCT, 0, 127, 0), D("DLY", F.PCT, 0, 127, 0), D("REV", F.PCT, 0, 127, 0),
     E("VCE", ["POLY", "MONO", "LEG", "UNI"], 0), D("GLD", F.TIME, 0, 127, 0), D("PAN", F.BIPCT, -64, 63, 0), E("MUTE", NONOFF, 0),
@@ -1812,7 +1821,7 @@ function makeMockDevice(opt = {}) {
     D("BPM", F.BPM, 40, 240, 120), D("SWG", F.PCT, 0, 100, 0), E("CLK", ["INT", "USB", "TRS"], 0), D("TUNE", F.INT, -50, 50, 0),
     E("TIME", [...NDIV, "1/8D", "1/16D", "1/4D"], 1), D("FDBK", F.PCT, 0, 120, 60), D("COLR", F.PCT, 0, 127, 70), D("MIX", F.PCT, 0, 127, 90),
     D("SIZE", F.PCT, 0, 127, 90), D("DAMP", F.PCT, 0, 127, 60), D("CRT", F.LFOHZ, 0, 127, 40), D("CDP", F.PCT, 0, 127, 60),
-    E("MIDI", ["USB", "TRS"], 0), E("SYNC", NDASH, 0), E("ROUT", ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16"], 0), D("CPU", F.INT, 0, 0, 0),
+    E("MIDI", ["USB", "TRS"], 0), E("SYNC", NDASH, 0), E("ROUT", ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16", "TRACK"], 0), D("CPU", F.INT, 0, 0, 0),
     D("SLOT", F.INT, 1, 4, 1), E("NAME", NDASH, 0), E("LOAD", NGO, 0), E("SAVE", NGO, 0),
     E("ENG", ["ANALOG", "-", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL",
       "GRAIN", "PHYS", "DRUM", "NOISE", "FM6", "SLICE"], 0), E("SET", NGO, 0),
@@ -1838,7 +1847,7 @@ function makeMockDevice(opt = {}) {
       presets: [] },
     { name: "PHASE", titles: ["PHS", "LINE"], edit: [E("WAVE", ["SAW", "SQR", "PLS", "DSIN", "SPLS", "RSAW", "RTRI", "RTRP"], 0),
         E("WAVE2", ["-", "SAW", "SQR", "PLS", "DSIN", "SPLS", "RSAW", "RTRI", "RTRP"], 0), D("DCW", F.PCT, 0, 127, 60), D("ENV", F.PCT, 0, 127, 64),
-        D("DTN", F.INT, 0, 127, 0, null, "ct"), E("LINE", ["MIX", "RING"], 0), D("SUB", F.PCT, 0, 127, 0), NONE],
+        D("DTN", F.INT, 0, 127, 0, null, "ct"), E("LINE", ["MIX", "RING"], 0), D("SUB", F.PCT, 0, 127, 0), D("FOLD", F.PCT, 0, 127, 0)],
       presets: [P("BRASS", [0, 0, 30, 90, 0, 0, 0, 0], [8, 70, 90, 40], 0, 6), P("ORGAN", [3, 0, 40, 0, 0, 0, 0, 0], [0, 127, 127, 30], 0, 6),
         P("STRING", [0, 4, 50, 40, 12, 0, 0, 0], [40, 90, 100, 70], 0, 5), P("RESO", [5, 0, 60, 60, 0, 0, 0, 0], [0, 70, 30, 60], 0, 1),
         P("BELL", [6, 0, 80, 50, 0, 0, 0, 0], [0, 95, 0, 90], 0, 7), P("WIRE", [4, 7, 70, 40, 7, 0, 0, 0], [10, 80, 80, 60], 0, 4)] },
@@ -1880,10 +1889,12 @@ function makeMockDevice(opt = {}) {
         P("KALIMBA", [0, 34, 16, 56, 100, 90, 0, 48], [0, 100, 127, 60], 0, 7), P("HAND DRUM", [2, 112, 76, 56, 44, 100, 14, 24], [0, 100, 127, 64], 0, 6),
         P("TOMS", [2, 0, 52, 40, 30, 100, 40, 30], [0, 100, 127, 70], 0, 2), P("DRONE STRING", [3, 127, 80, 88, 64, 100, 92, 0], [0, 100, 127, 90], 0, 3),
         P("HARP", [3, 8, 62, 74, 60, 90, 0, 0], [0, 100, 127, 80], 0, 3)] },
-    { name: "DRUM", titles: ["KIT", "HIT"], edit: [E("KIT", ["STD", "66", "10", "77", "80", "10", "66", "55", "77"], 0), D("TUNE", F.PCT, 0, 127, 64),
+    { name: "DRUM", titles: ["KIT", "HIT"], edit: [E("KIT", ["STD", "66", "10", "77", "80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC"], 0), D("TUNE", F.PCT, 0, 127, 64),
         D("TONE", F.PCT, 0, 127, 64), D("DECY", F.PCT, 0, 127, 64), D("SNAP", F.PCT, 0, 127, 64), D("ACC", F.PCT, 0, 127, 100),
         E("KICK", ["PUNCH", "ROUND"], 0), D("DRV", F.PCT, 0, 127, 0)],
-      presets: [P("DRUM KIT", [0, 64, 70, 64, 64, 100, 0, 0], [0, 100, 127, 100], 0, 12)] },
+      presets: [P("DRUM KIT", [0, 64, 70, 64, 64, 100, 0, 0], [0, 100, 127, 100], 0, 12),   /* (1.5.6, #216: the new kits) */
+        P("DEEP KIT", [9, 64, 64, 64, 64, 100, 0, 0], [0, 100, 127, 100], 0, 12), P("TIGHT KIT", [10, 64, 64, 56, 64, 100, 0, 16], [0, 100, 127, 100], 0, 12),
+        P("PERC KIT", [11, 64, 64, 64, 64, 100, 0, 0], [0, 100, 127, 100], 0, 12)] },
     { name: "NOISE", titles: ["SRC", "MOVE"], edit: [E("MODE", ["ANLG", "DUST", "LFSR", "META"], 0), D("COLR", F.PCT, 0, 127, 64),
         D("FREQ", F.CUTOFF, 0, 127, 80), D("RES", F.PCT, 0, 127, 30), D("TRK", F.PCT, 0, 127, 64), D("DENS", F.PCT, 0, 127, 0),
         D("DRFT", F.PCT, 0, 127, 0), D("CRSH", F.PCT, 0, 127, 0)],
@@ -3530,6 +3541,7 @@ setInterval(async () => {
 
 /* ---------------------------------------------------------- steps --- */
 const TIMES = ["NOTE", "TIE", "REST"];
+const CONDITIONS = ["OFF","1:2","2:2","1:3","2:3","3:3","1:4","2:4","3:4","4:4","FILL","!FILL"];
 function renderStepHead() { if (dev && dev.steps.length) renderSteps(); }
 const stepLen = () => Math.max(1, Math.min(dev.info.nstep, dev.dump.p[pSlen()] || 16));
 /* a step's notes as text */
@@ -3549,7 +3561,7 @@ function renderSteps() {
   for (let b = 0; b < len; b += 16) {
     const tb = el("table", {}, el("tr", {}, el("th"), el("th", { text: t("notes") }), el("th", { text: t("hits") }), el("th", { text: t("time") }),
       el("th", { text: t("acc") }), el("th", { text: t("slide") }), el("th", { text: t("vel") }), ...(dev.info.chance ? [el("th", { text: t("chance") })] : []),
-      ...(dev.info.ratchet ? [el("th", { text: t("ratchet") })] : []), ...(dev.info.nudge ? [el("th",{text:t("smkNudge")})] : [])));
+      ...(dev.info.ratchet ? [el("th", { text: t("ratchet") })] : []), ...(dev.info.nudge ? [el("th",{text:t("smkNudge")})] : []), ...(dev.info.conditions ? [el("th",{text:t("condition")})] : [])));
     for (let i = b; i < Math.min(len, b + 16); i++) tb.append(stepRow(i));
     tables.push(tb);
   }
@@ -3566,10 +3578,11 @@ function stepRow(i) {
   const ratchet = dev.info.ratchet ? el("select", { "aria-label": `${t("ratchet")} ${i + 1}` },
     ...Array.from({ length: dev.info.ratchet }, (_, k) => el("option", { value: k + 1, text: `x${k + 1}` }))) : null;
   const nudge = dev.info.nudge ? el("input", {type:"number",min:-8,max:7,"aria-label":`Nudge ${i+1}`}) : null;
+  const condition = dev.info.conditions ? el("select", {"aria-label":`${t("condition")} ${i+1}`}, ...CONDITIONS.map((text,value)=>el("option",{text,value}))) : null;
   const tr = el("tr", { "data-i": i }, el("td", { class: "i", text: String(i + 1) }),
     el("td", {}, notes), el("td", {}, hits), el("td", {}, time), el("td", {}, acc), el("td", {}, sl), el("td", {}, vel), ...(chance ? [el("td", {}, chance)] : []),
-    ...(ratchet ? [el("td", {}, ratchet)] : []), ...(nudge ? [el("td", {}, nudge)] : []));
-  tr._c = { notes, hits, time, acc, sl, vel, chance, ratchet, nudge };
+    ...(ratchet ? [el("td", {}, ratchet)] : []), ...(nudge ? [el("td", {}, nudge)] : []), ...(condition ? [el("td", {}, condition)] : []));
+  tr._c = { notes, hits, time, acc, sl, vel, chance, ratchet, nudge, condition };
   fillStep(tr, dev.steps[i]);
   const send = () => writeStep(i, tr);
   notes.addEventListener("change", send);
@@ -3581,6 +3594,7 @@ function stepRow(i) {
   if (chance) chance.addEventListener("change", send);
   if (ratchet) ratchet.addEventListener("change", send);
   if (nudge) nudge.addEventListener("change", send);
+  if (condition) condition.addEventListener("change", send);
   return tr;
 }
 function fillStep(tr, s) {
@@ -3597,6 +3611,7 @@ function fillStep(tr, s) {
   if (c.chance) c.chance.value = String(s.chance ?? 100);
   if (c.ratchet) c.ratchet.value = String(s.ratchet ?? 1);
   if (c.nudge) c.nudge.value = String(s.nudge ?? 0);
+  if (c.condition) c.condition.value = String(s.condition ?? 0);
   tr.classList.toggle("off", !stepOn(s));
 }
 function updateStepRows() {
@@ -3647,6 +3662,7 @@ async function writeStep(i, tr) {
   if (c.chance) s.chance = Math.max(0, Math.min(100, Math.round(+c.chance.value || 0)));
   if (c.ratchet && c.chance) s.ratchet = Math.max(1, Math.min(4, +c.ratchet.value || 1));
   if(c.nudge)s.nudge=Math.max(-8,Math.min(7,Math.round(+c.nudge.value||0)));
+  if(c.condition)s.condition=Math.max(0,Math.min(11,+c.condition.value||0));
   if ((s.n || s.hit) && !s.vel) s.vel = 96;
   stepEdit.set(i, performance.now());
   try {
@@ -4449,6 +4465,7 @@ async function syncPreferences(d) {
   if (!d || !d.info || !d.info.uiCaps) { renderPreferences(); return; }
   const preferences = await readDevicePreferences((r, o) => sessionRequest(d, r, o), d.info, d.names, d.preferences);
   if (dev !== d) return;
+  if(d.info.customPalette){preferences.custom=parse[CMD.PALETTE_GET](await sessionRequest(d,req.paletteGet()));if(dev!==d)return;}
   d.preferences = preferences;
   if(d.info.menuCount && (!d.menu || performance.now()-(d.menuReadAt||0)>10000)){
     const items=[];
@@ -4494,7 +4511,7 @@ function renderPreferences(force = false) {
   $("device-display").hidden = !p || !(p.state.caps & 7);
   $("device-presets").hidden = !p || !(p.state.caps & 8);
   if (!p) { renderPreferences.sig = null; return; }
-  const sig = JSON.stringify([p.state, p.palettes, d.menu, lang, d.dump && d.dump.engine]);
+  const sig = JSON.stringify([p.state, p.palettes, p.custom, d.menu, lang, d.dump && d.dump.engine]);
   if (!force && sig === renderPreferences.sig) return;
   renderPreferences.sig = sig;
   const defs = [
@@ -4510,6 +4527,13 @@ function renderPreferences(force = false) {
     select.value = value;
     select.addEventListener("change", () => changePreference(id, +select.value));
     controls.push(el("label", { class: "bar" }, el("span", { text: t(key) }), select));
+  }
+  if(d.info.customPalette && p.custom){
+    controls.push(el("h3",{text:t("customPalette")}));
+    const names=["paletteBackground","paletteSurface","paletteText","paletteTheme","paletteAccent"];
+    const inputs=p.custom.colors.map((value,i)=>{const input=el("input",{type:"color",value,"aria-label":t(names[i])});controls.push(el("label",{class:"bar"},el("span",{text:t(names[i])}),input));return input;});
+    const apply=action=>op(async()=>{if(dev!==d)return;const result=parse[CMD.PALETTE_SET](await sessionRequest(d,req.paletteSet(action,inputs.map(i=>i.value)),FLASH_OPT));if(dev!==d)return;if(action!==0){d.preferences=null;d.menu=null;await syncPreferences(d);}preferenceResult(result.rc);});
+    controls.push(el("div",{class:"bar"},...["palettePreview","paletteSave","paletteRemove","paletteCancel"].map((key,action)=>el("button",{text:t(key),onclick:()=>apply(action)}))));
   }
   // Descriptor-driven device settings; unavailable on older/device-free builds.
   // Palette is already above. Names/choices come from firmware, like parameter labels.

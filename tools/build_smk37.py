@@ -20,6 +20,8 @@ import build
 
 
 def main():
+    if not (build.FW/"engines/src/felucca_engine.h").is_file():
+        raise SystemExit("Initialize the pinned engines: git submodule update --init firmware/engines")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--stock-backups', nargs=2, type=Path)
     parser.add_argument('--stock-package', type=Path)
@@ -36,7 +38,7 @@ def main():
     if args.public_release:
         if args.stock_backups or args.stock_package:
             parser.error('--public-release does not consume private backups or vendor packages')
-        if args.usb_test_number==14:args.usb_test_number=28
+        if args.usb_test_number==14:args.usb_test_number=29
         args.enable_saves=args.enable_presets=args.enable_usb_update=True
         args.enable_usb_audio=args.enable_samples=args.enable_trs=True
     if args.enable_trs and not args.enable_usb_audio:
@@ -184,13 +186,12 @@ def main():
         "trs_midi_output_hardware_validated": False,
         "usb_audio_rates": [44100, 48000] if args.enable_usb_audio else [],
         "update_product": f"SMK-37_9{args.usb_test_number:02d}", "update_version": update_version,
-        "upstream_revision": "a4d7ca2e5d52a4c35e2468401f00d883cadbda03",
-        "upstream_version": "1.5.1",
+        "upstream_revision": "a53ecf428c29c780108fd70a31b71a32a6b5c313",
+        "upstream_version": "1.6.1",
         "prior_unit_evidence": "Test12: owner-confirmed USB update/restart and saved-project retention; earlier tests cover controls, sound, sustain and editor. This new artifact is not device-validated.",
         "flash_write_gate": (("projects 0xEB000..0xF3000; " + ("presets 0xB1000..0xB7000 (blank/owned A/B only), legacy 0xF3000..0xF4000 and 0xFE000..0xFF000; " if args.enable_presets else "") + "call-free RAM routines; runtime JEDEC/trim/allocation checks") if args.enable_saves else "erase/program entry points disassemble to return -1; read routines are call-free RAM code"),
         "unverified": [f"Test{args.usb_test_number:02d} startup, audio/control timing and USB update on hardware",
-                       "new effects, automation, MIDI learn and metronome on hardware",
-                       "Test12-to-FUN10 project migration on hardware",
+                       "1.6.1 sequencer, MIDI routing and custom palettes on hardware",
                        "long-run audio/control timing", "unit calibration backup"],
     }
     if evidence:

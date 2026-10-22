@@ -1,2 +1,5 @@
 # Keep build/test shell scripts usable from WSL on Windows checkouts.
 *.sh text eol=lf
+
+# Sound fixtures are compared byte-for-byte by Linux host tools.
+tests/*golden.txt text eol=lf

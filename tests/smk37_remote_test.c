@@ -42,6 +42,9 @@ static void output(FILE *f){
 int main(void){
     smk37_synth_init();memset(flash,255,sizeof flash);
     assert(query(0,0)==52 && smk37_remote_live && smk37_remote_refresh);
+    smk37_page=SMK37_TOOLS_PAGE;smk37_tool=TL_N;event(0,3,1);assert(seq_fill);event(7,0,0);assert(!seq_fill && !smk37_fill_down);
+    event(0,3,1);smk37_surface_button(0,3,1);event(7,0,0);assert(seq_fill);smk37_surface_button(0,3,0);assert(!seq_fill);
+    smk37_page=0;
     event(2,36,100);assert(kb_chn[36]);
     smk37_surface_key(0,36,90);event(2,36,0);assert(kb_chn[36]);
     smk37_surface_key(0,36,0);assert(!kb_chn[36]);
@@ -73,7 +76,7 @@ int main(void){
     }
     /* Browser fixture generated from the real firmware's screen and wire replies. */
     FILE *f=fopen("build/smk37-tests/remote-wire.json","w");assert(f);fputs("{\"info\":",f);
-    const uint8_t info[]={125,70,76,1};assert(smk37_editor_handle(info,sizeof info));output(f);fputs(",\"menus\":[",f);
+    const uint8_t info[]={125,70,76,1};assert(smk37_editor_handle(info,sizeof info));output(f);fputs(",\"palette\":",f);assert(req(80,0,0));output(f);fputs(",\"menus\":[",f);
     for(uint8_t i=0;i<SMK37_MENU_COUNT;i++){if(i)fputc(',',f);assert(req(72,&i,1));output(f);}fputs("],\"state\":",f);
     smk37_surface_key(0,0,100);smk37_surface_key(0,36,100);smk37_surface_pad(0,2,100);
     smk37_remote_led_pads=4;smk37_remote_led_buttons=1u<<12;smk37_remote_led_color=2;smk37_remote_led_level=8;

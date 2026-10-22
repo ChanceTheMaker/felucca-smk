@@ -28,6 +28,8 @@ p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--zig', default=default_zig(), help='Zig executable (tested with 0.13.0); otherwise ZIG, ziglang, or PATH')
 p.add_argument('--skip-generate', action='store_true', help='Reuse build/gen from a checked SMK build')
 a = p.parse_args()
+if not (ROOT/"firmware/engines/src/felucca_engine.h").is_file():
+    p.error("Initialize the pinned engines: git submodule update --init firmware/engines")
 if not a.zig:
     p.error('Zig not found. Install tools/smk-browser-requirements.txt or pass --zig PATH.')
 gen = ROOT / 'build/gen'

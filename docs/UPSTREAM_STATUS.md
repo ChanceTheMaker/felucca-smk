@@ -1,3 +1,12 @@
+## Felucca SMK 1.6.1 integration candidate - 2026-10-21
+
+Branch `integrate/felucca-1.6.1-smk`, candidate 0.9.29; upstream v1.6.1
+`a53ecf4`, with narrow stress-test/zero-tempo fix `63f88ec`.
+SMK controls, current storage, remote screen and OG recovery are retained.
+The owner waived backward save compatibility. Public firmware remains 0.9.28;
+hardware validation of this candidate is pending. No publication or flashing.
+[Port scope, controls, dependencies and validation](smk37/FELUCCA_1_6_1.md).
+
 ## Felucca SMK 0.9.28 flash compatibility release — 2026-10-18
 
 Focused issue #17 fix from fork baseline `1e4bb38`: share the exact 856014 / EB6014

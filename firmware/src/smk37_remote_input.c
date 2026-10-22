@@ -39,7 +39,7 @@ static void smk37_remote_release(void){
     /* A disconnected hold must not become a tap (which can invoke a menu action). */
     for(unsigned i=0;i<18;i++)if(smk37_surface_buttons[1][i]){
         smk37_surface_buttons[1][i]=0;
-        if(!smk37_surface_buttons[0][i]){smk37_button_down&=~(1u<<i);smk37_button_held&=~(1u<<i);}
+        if(!smk37_surface_buttons[0][i]){if(i==3)seq_fill=smk37_fill_down=0;smk37_button_down&=~(1u<<i);smk37_button_held&=~(1u<<i);}
     }
     smk37_remote_pedal=0;
     smk37_local_bend=(smk37_analog_ready&16)?smk37_pitch_value(smk37_analog_anchor[4]):0;

@@ -2,9 +2,18 @@
  * Copyright (C) 2026 Chance Roth (@ChanceTheMaker)
  * FM6 field and slice editing semantics from upstream ui_fm6op.c/ui_slice.c,
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hugelton Instruments. */
+#define FELUCCA_PALETTE_ADAPTER 1
 #include "favorites.c"
+#undef FELUCCA_PALETTE_ADAPTER
 #include "ui_palette_types.h"
 #include "ui_palettes.h"
+static uint16_t smk37_custom_preview[5];
+static uint8_t smk37_preview_palette;
+static uint32_t smk37_palette_generation;
+static uint32_t palette_n(void){return UI_NPALETTES+!!(ui_cpal_flags&CPAL_STORED);}
+static uint32_t palette_cur(void){return cpal_on()?UI_NPALETTES:smk37_palette%UI_NPALETTES;}
+static const char *palette_name(uint32_t v){return v==UI_NPALETTES?"CUSTOM":UI_PALETTES[v%UI_NPALETTES].name;}
+
 #define smk37_browser_fav favorites.filter
 static uint8_t smk37_global_prefs;
 static uint8_t smk37_restore_last=1,smk37_style,smk37_large;
@@ -19,14 +28,14 @@ static uint32_t smk37_user_used;
 static char smk37_user_names[SMK37_UP_SLOTS][13];
 static void smk37_user_name(unsigned k,char *out){str_cpy(out,k<smk37_user_capacity && (smk37_user_used&(1u<<k))?smk37_user_names[k]:"",24);}
 static const char *const smk37_groups[]={"SOUND","MODULATION","EFFECTS","SEQUENCER","PERFORMANCE","SAVE / PRESETS","SYSTEM","DIAGNOSTICS"};
-static const uint8_t smk37_group_pages[8][12]={
+static const uint8_t smk37_group_pages[8][13]={
  {0,1,2,SMK37_OP_PAGE,SMK37_OPENV_PAGE,SMK37_OP2_PAGE,SMK37_SLICE_PAGE,3,11,12,255},
  {4,5,6,29,19,20,21,22,255},
  {7,8,9,10,27,28,17,255},
- {23,SMK37_STEP_PAGE,SMK37_DETAIL_PAGE,37,SMK37_AUTOMATION_PAGE,SMK37_SONG_PAGE,SMK37_TOOLS_PAGE,SMK37_PHRASE_PAGE,30,31,255},
+ {23,SMK37_STEP_PAGE,SMK37_DETAIL_PAGE,37,SMK37_AUTOMATION_PAGE,SMK37_SONG_PAGE,SMK37_TOOLS_PAGE,SMK37_PHRASE_PAGE,SMK37_EUCLID_PAGE,30,31,255},
  {13,14,15,16,SMK37_PERFORM_PAGE,SMK37_CLICK_PAGE,255},
  {SMK37_BROWSER_PAGE,SMK37_PRESET_PAGE,SMK37_NAME_PAGE,SMK37_PROJECT_PAGE,SMK37_UNDO_PAGE,255},
- {18,SMK37_SETTINGS_PAGE,33,SMK37_LEARN_PAGE,SMK37_DISPLAY_PAGE,SMK37_PREF_PAGE,SMK37_STORAGE_PAGE,255},
+ {18,SMK37_SETTINGS_PAGE,33,SMK37_MIDI_CHANNEL_PAGE,SMK37_LEARN_PAGE,SMK37_DISPLAY_PAGE,SMK37_PREF_PAGE,SMK37_STORAGE_PAGE,255},
  {SMK37_ANALOG_PAGE,SMK37_BUTTON_PAGE,SMK37_LIGHT_PAGE,SMK37_PEDAL_PAGE,255}
 };
 static int smk37_page_ok(unsigned p){
@@ -45,8 +54,8 @@ static unsigned smk37_edit_next(unsigned p){
     unsigned start=0;for(unsigned i=0;i<sizeof list;++i)if(list[i]==p){start=(i+1)%sizeof list;break;}
     for(unsigned n=0;n<sizeof list;++n){unsigned q=list[(start+n)%sizeof list];if(smk37_page_ok(q))return q;}return 1;
 }
-static unsigned smk37_nav_count(void){unsigned n=0;while(n<12 && smk37_group_pages[smk37_nav_group][n]!=255)++n;return n;}
-static void smk37_open(unsigned p){smk37_storage_confirm=0;smk37_page=p;smk37_patch_mode=p==0;smk37_input_at=fm1_ms;}
+static unsigned smk37_nav_count(void){unsigned n=0;while(n<13 && smk37_group_pages[smk37_nav_group][n]!=255)++n;return n;}
+static void smk37_open(unsigned p){if(eu.on && p!=SMK37_EUCLID_PAGE)eu_close(TSEL,1);smk37_storage_confirm=0;smk37_page=p;smk37_patch_mode=p==0;smk37_input_at=fm1_ms;}
 /* One sound undo per gesture. Runtime voice pointers and live note ownership
  * are never copied. Pattern/automation undo remains independent. */
 typedef struct {int16_t p[P_COUNT];uint8_t fm6[FP_SIZE+1],engine,preset,user;} smk37_sound_state_t;
@@ -73,14 +82,14 @@ static void smk37_sound_swap(void){
 static const char *const smk37_pref_names[]={"PALETTE","BOLD FONT","MIDI MONITOR","KNOB ACCEL","BPM LOCK","HOLD TIME","HOME VIEW","SCREEN OFF","HELP HINTS","LED LEVEL","ANIMATION","FX LATCH","SCOPE","USB LEVEL","CLICK","CLICK LEVEL","COUNT-IN","RESTORE LAST","STYLE","LARGE","STEP PREVIEW","SPEAKER EQ","TRS OUT"};
 #define SMK37_PREF_COUNT 23u
 static unsigned smk37_pref_get(unsigned r){switch(r){
- case 0:return smk37_palette;case 1:return smk37_bold;case 2:return monitor_mode;case 3:return smk37_accel;case 4:return smk37_bpm_lock;
+ case 0:return palette_cur();case 1:return smk37_bold;case 2:return monitor_mode;case 3:return smk37_accel;case 4:return smk37_bpm_lock;
  case 5:return smk37_hold;case 6:return smk37_home;case 7:return smk37_screen_off;case 8:return smk37_help;case 9:return smk37_led_level;case 10:return smk37_animation;case 11:return perf_latch_on;case 12:return scope_mix;case 13:return fx_usb_fixed;case 14:return click_mode;case 15:return click_lvl;case 16:return cin_bars;case 17:return smk37_restore_last;case 18:return smk37_style;case 19:return smk37_large;case 20:return smk37_step_preview;case 21:return fx_lowcut;case 22:return smk37_trs_enabled;default:return 0;}}
 static void smk37_pref_set(unsigned r,unsigned v){switch(r){
- case 0:smk37_palette=v%23;break;case 1:smk37_bold=!!v;break;case 2:monitor_mode=v%3;break;case 3:smk37_accel=!!v;break;case 4:smk37_bpm_lock=!!v;break;
+ case 0:if(v==UI_NPALETTES && (ui_cpal_flags&CPAL_STORED))ui_cpal_flags|=CPAL_ACTIVE;else {smk37_palette=v%UI_NPALETTES;ui_cpal_flags&=~CPAL_ACTIVE;}smk37_preview_palette=0;++smk37_palette_generation;break;case 1:smk37_bold=!!v;break;case 2:monitor_mode=v%3;break;case 3:smk37_accel=!!v;break;case 4:smk37_bpm_lock=!!v;break;
  case 5:smk37_hold=v%4;break;case 6:smk37_home=v%2;break;case 7:smk37_screen_off=v%5;break;case 8:smk37_help=!!v;break;case 9:smk37_led_level=v%9;break;case 10:smk37_animation=!!v;break;case 11:perf_latch_on=!!v;if(!v)perf_latched=0;break;case 12:scope_mix=!!v;break;case 13:fx_usb_fixed=!!v;break;case 14:click_mode=v%3;break;case 15:click_lvl=v%3;break;case 16:cin_bars=v%3;break;case 17:smk37_restore_last=!!v;break;case 18:smk37_style=!!v;break;case 19:smk37_large=!!v;break;case 20:smk37_step_preview=!!v;if(!v)aud_req=0;break;case 21:fx_lowcut=v%3;break;case 22:smk37_trs_enabled=SMK37_ENABLE_TRS&&!!v;break;}}
-static unsigned smk37_pref_max(unsigned r){return r==0?22:r==2 || r==21 || (r>=14 && r<=16)?2:r==5?3:r==7?4:r==9?8:1;}
+static unsigned smk37_pref_max(unsigned r){return r==0?palette_n()-1:r==2 || r==21 || (r>=14 && r<=16)?2:r==5?3:r==7?4:r==9?8:1;}
 static void smk37_pref_format(unsigned r,char *s){unsigned v=smk37_pref_get(r);
-    if(r==0){str_cpy(s,UI_PALETTES[v%UI_NPALETTES].name,24);return;}
+    if(r==0){str_cpy(s,palette_name(v),24);return;}
     if(r==2){str_cpy(s,(const char *const[]){"OFF","EVENTS","NOTES"}[v],24);return;}
     if(r==5){fmt_int(s,300+100*v);str_cpy(s+str_len(s)," ms",8);return;}
     if(r==6){str_cpy(s,v?"SCOPE":"TRACKS",24);return;}
@@ -112,6 +121,7 @@ static void smk37_browser_name(unsigned p,char *s){
 static void smk37_name_begin(void){smk37_name_slot=smk37_user_slot;memset(smk37_name,' ',12);smk37_name[12]=0;
     char name[24];smk37_user_name(smk37_user_slot,name);for(unsigned i=0;i<12 && name[i];++i)smk37_name[i]=name[i];smk37_name_pos=0;}
 /* A held navigation key selects a layer without firing its tap action. */
+static uint8_t smk37_fill_down;
 static uint32_t smk37_button_down,smk37_button_held,smk37_button_at[18];
 static void smk37_hold_poll(void){for(unsigned b=10;b<=13;++b)if((smk37_button_down&(1u<<b)) && !(smk37_button_held&(1u<<b)) && fm1_ms-smk37_button_at[b]>=300u+100u*smk37_hold){
     smk37_button_held|=1u<<b;
@@ -121,6 +131,8 @@ static void smk37_hold_poll(void){for(unsigned b=10;b<=13;++b)if((smk37_button_d
 }}
 static void smk37_button_input(unsigned b,unsigned down){
     if(b>=18)return;smk37_input_at=fm1_ms;
+    /* Hold > on SEQ TOOLS for momentary FILL; release always clears it. */
+    if(b==3 && ((!down && smk37_fill_down) || (down && smk37_page==SMK37_TOOLS_PAGE && smk37_tool==TL_N))){seq_fill=!!down;smk37_fill_down=!!down;return;}
     if(down){smk37_button_down|=1u<<b;smk37_button_at[b]=fm1_ms;if(b<10 || b>13)smk37_button_event(b);}
     else {smk37_hold_poll();smk37_button_down&=~(1u<<b);if(b>=10 && b<=13 && !(smk37_button_held&(1u<<b)))smk37_button_event(b);smk37_button_held&=~(1u<<b);}
 }
@@ -164,6 +176,12 @@ static int smk37_workflow_turn(unsigned e,int d){
     if(smk37_page==33 && c>=2){if(c==2){smk37_trs_enabled=SMK37_ENABLE_TRS&&d>0;smk37_prefs_request=1;ui_message(SMK37_ENABLE_TRS?"TRS OUT / USB UNCHANGED":"TRS NOT ENABLED IN BUILD");}return 1;}
     if(smk37_page==SMK37_PRESET_PAGE && c==3){smk37_name_begin();smk37_open(SMK37_NAME_PAGE);return 1;}
     switch(smk37_page){
+    case SMK37_EUCLID_PAGE:
+        if(chain.running || chain.armed){ui_message("STOP SONG FIRST");return 1;}
+        if(eu.on && eu.trk!=song.sel)eu_close(TSEL,1);
+        if(!eu.on)eu_open(TSEL);
+        if(c<3)eu_knob(TSEL,c,d);else {smk37_lane=smk37_wrap(smk37_lane,d,NLANE);eu_lane(TSEL);}return 1;
+    case SMK37_MIDI_CHANNEL_PAGE:mch_set(c,clamp((int)mch_get(c)+d,0,MCH_N-1));midi_route=MIDI_ROUTE_AGAIN;return 1;
     case SMK37_NAV_PAGE:
         if(!c){smk37_nav_group=smk37_wrap(smk37_nav_group,d,8);smk37_nav_row=0;}
         if(c==1)smk37_nav_row=smk37_wrap(smk37_nav_row,d,smk37_nav_count());return 1;
@@ -189,6 +207,10 @@ static int smk37_workflow_turn(unsigned e,int d){
 static int smk37_workflow_button(unsigned b){
     if(b!=2 && b!=3)return 0;
     switch(smk37_page){
+    case SMK37_EUCLID_PAGE:
+        if(chain.running || chain.armed){ui_message("STOP SONG FIRST");return 1;}
+        if(eu.on){eu_close(TSEL,b==3);ui_message(b==3?"EUCLID APPLIED":"EUCLID CANCELLED");}
+        else if(b==3)eu_open(TSEL);return 1;
     case SMK37_STORAGE_PAGE:
         if(b==2){smk37_open(SMK37_NAV_PAGE);return 1;}
         if(!SMK37_ENABLE_SAMPLES){ui_message("SAMPLES DISABLED IN BUILD");return 1;}

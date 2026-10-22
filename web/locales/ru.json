@@ -503,5 +503,16 @@
   "ui.smkInstallerTitle": "Felucca SMK — Установщик",
   "ui.smkStudioTitle": "Felucca SMK Studio",
   "ui.audioVersionMismatch": "Версии звукового движка браузера и Studio различаются. Перезагрузите страницу, чтобы загрузить соответствующие аудиофайлы.",
-  "editor.smkSampleSetup": "Активных слотов сэмплов нет. В сборках с поддержкой хранения сэмплов откройте NAVIGATE → SYSTEM → SAMPLE STORAGE на SMK, затем подключитесь заново. Инициализация заменяет заводские данные сэмплов; сохраните исходную резервную копию."
+  "editor.smkSampleSetup": "Активных слотов сэмплов нет. В сборках с поддержкой хранения сэмплов откройте NAVIGATE → SYSTEM → SAMPLE STORAGE на SMK, затем подключитесь заново. Инициализация заменяет заводские данные сэмплов; сохраните исходную резервную копию.",
+  "editor.condition": "Условие",
+  "editor.customPalette": "Своя палитра",
+  "editor.paletteBackground": "Фон",
+  "editor.paletteSurface": "Поверхность",
+  "editor.paletteText": "Текст",
+  "editor.paletteTheme": "Тема",
+  "editor.paletteAccent": "Акцент",
+  "editor.palettePreview": "Просмотр",
+  "editor.paletteSave": "Сохранить палитру",
+  "editor.paletteRemove": "Удалить",
+  "editor.paletteCancel": "Отменить просмотр"
 }

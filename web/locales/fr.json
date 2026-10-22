@@ -503,5 +503,16 @@
   "ui.smkInstallerTitle": "Felucca SMK — Installateur",
   "ui.smkStudioTitle": "Felucca SMK Studio",
   "ui.audioVersionMismatch": "Le moteur audio du navigateur et Studio ont des versions différentes. Rechargez cette page pour charger les fichiers audio correspondants.",
-  "editor.smkSampleSetup": "Aucun emplacement d’échantillon actif. Sur les versions compatibles, ouvrez NAVIGATE → SYSTEM → SAMPLE STORAGE sur le SMK, puis reconnectez-le. L’initialisation remplace les données d’échantillons d’origine ; conservez votre sauvegarde."
+  "editor.smkSampleSetup": "Aucun emplacement d’échantillon actif. Sur les versions compatibles, ouvrez NAVIGATE → SYSTEM → SAMPLE STORAGE sur le SMK, puis reconnectez-le. L’initialisation remplace les données d’échantillons d’origine ; conservez votre sauvegarde.",
+  "editor.condition": "Condition",
+  "editor.customPalette": "Palette personnalisée",
+  "editor.paletteBackground": "Fond",
+  "editor.paletteSurface": "Surface",
+  "editor.paletteText": "Texte",
+  "editor.paletteTheme": "Thème",
+  "editor.paletteAccent": "Accent",
+  "editor.palettePreview": "Aperçu",
+  "editor.paletteSave": "Enregistrer la palette",
+  "editor.paletteRemove": "Supprimer",
+  "editor.paletteCancel": "Annuler l’aperçu"
 }

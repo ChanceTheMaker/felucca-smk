@@ -12,9 +12,10 @@ for(const f of frames){
   if(f[4]===CMD.MENU_DESC){rows.push(result);if(result.kind===0)assert.equal(result.choices.length,result.max-result.min+1);else{assert.equal(result.id,22);assert.equal(result.min,-50);assert.equal(result.max,50);}assert(result.tabName);assert(replyMatches(f[4],[result.index],f.slice(5,-1)));}
   else {assert.equal(result.rc,0);assert.equal(result.id,18);assert.equal(result.value,1);}
 }
-assert.equal(rows.length,22);assert.equal(new Set(rows.map(r=>r.id)).size,22);
+assert.equal(rows.length,26);assert.equal(new Set(rows.map(r=>r.id)).size,26);
 assert.deepEqual(Array.from(rows.find(r=>r.id===9).choices),['FLAT','LOWCUT','BASS+']);
 assert.equal(rows.find(r=>r.id===21).name,'MIDI IN');
+for(let id=26;id<=29;id++){const row=rows.find(r=>r.id===id);assert.equal(row.choices.length,18);assert.equal(row.choices[16],'OMNI');assert.equal(row.choices[17],'OFF');}
 assert.equal(rows.find(r=>r.id===4).choices.length,9);
 assert.deepEqual(Array.from(rows.find(r=>r.id===23).choices),['SCOPE','TRACKS']);
 assert.deepEqual(Array.from(rows.find(r=>r.id===3).choices),['ON','OFF']);

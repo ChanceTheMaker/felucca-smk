@@ -14,7 +14,7 @@ static unsigned smk37_ed_finish(void){smk37_ed_out[smk37_ed_n++]=0xf7;return smk
 static void smk37_ed_step(const step_t *s){
     smk37_ed_byte(s->n);for(unsigned i=0;i<4;++i)smk37_ed_byte(s->note[i]);
     smk37_ed_byte(s->time);smk37_ed_byte(s->flags&(SF_ACCENT|SF_SLIDE));smk37_ed_byte(s->vel);
-    smk37_ed_byte(s->hit);smk37_ed_byte(s->acc);smk37_ed_byte((s->hit>>7)|((s->acc>>7)<<1));smk37_ed_byte(step_chance(s));smk37_ed_byte(step_ratchet(s));smk37_ed_byte(step_nudge(s)+8);
+    smk37_ed_byte(s->hit);smk37_ed_byte(s->acc);smk37_ed_byte((s->hit>>7)|((s->acc>>7)<<1));smk37_ed_byte(step_chance(s));smk37_ed_byte(step_ratchet(s));smk37_ed_byte(step_nudge(s)+8);smk37_ed_byte(step_cond(s));
 }
 static void smk37_ed_step_put(step_t *s,const uint8_t *a,unsigned n){
     s->n=a[0]>4?4:a[0];for(unsigned i=0;i<4;++i)s->note[i]=a[1+i];
@@ -23,6 +23,7 @@ static void smk37_ed_step_put(step_t *s,const uint8_t *a,unsigned n){
     if(n>=12)step_set_chance(s,a[11]);
     if(n>=13)step_set_ratchet(s,a[12]);
     if(n>=14)step_set_nudge(s,(int)a[13]-8);
+    if(n>=15 && a[14] && a[14]<=NCOND)step_set_chance_v(s,100u+a[14]);
 }
 static void smk37_ed_motion_reply(uint32_t k, uint32_t rc, uint32_t kinds, uint32_t full)
 {
@@ -231,6 +232,7 @@ static unsigned smk37_editor_main_command(const uint8_t *f,unsigned n){
     if(f[3]>=11&&f[3]<=15)return smk37_editor_samples(f[3],f+4,n-4);
 #endif
     if(f[3]>=34 && f[3]<=38)return smk37_editor_preferences(f[3],f+4,n-4);
+    if(f[3]==80 || f[3]==81)return smk37_editor_palette(f[3],f+4,n-4);
     if(f[3]==72 || f[3]==73)return smk37_editor_menu(f[3],f+4,n-4);
     if(f[3]==33)return smk37_editor_song(f+4,n-4);
     if(f[3]>=16&&f[3]<=21)return smk37_editor_presets(f[3],f+4,n-4);
@@ -282,6 +284,8 @@ static unsigned smk37_editor_handle(const uint8_t *f,unsigned n){
         {static const uint8_t caps[]={16,0x55,1,15,0x57,1,4,0x4d,1,64,1,0x52,1,4,0x4c,1,1,0x41,1,0,1,0x54,1,16,0x43,1,16,0x46,1,8,0};
          for(i=0;i<sizeof caps;++i)smk37_ed_byte(caps[i]);
          smk37_ed_byte(0x4e);smk37_ed_byte(1);smk37_ed_byte(SMK37_MENU_COUNT);
+         smk37_ed_byte(0x4b);smk37_ed_byte(1);smk37_ed_byte(NCOND);
+         smk37_ed_byte(0x45);smk37_ed_byte(1);smk37_ed_byte(5);
          if(smk37_up_ready){smk37_ed_byte(0x50);smk37_ed_byte(1);smk37_ed_byte(3);}} /* only implemented capabilities */
 #if SMK37_REMOTE_PANEL
         smk37_ed_byte(0x60);smk37_ed_byte(1);smk37_ed_byte(4); /* RP: bounded rectangle batches; v1/v2/v3 compatible */
@@ -311,7 +315,7 @@ static unsigned smk37_editor_handle(const uint8_t *f,unsigned n){
         if(na<off)return 0;
         unsigned tr=cmd==30?a[0]:song.sel,index=a[off-1],len=na-off;
         if(tr>=NTRK || index>=NSTEP || (cmd==6&&len) || (cmd==7&&!len) ||
-           (len && len!=8 && len!=11 && len!=12 && len!=13 && len!=14) || (len>=12&&a[off+11]>100) || (len>=13&&(a[off+12]<1 || a[off+12]>4)) || (len>=14&&a[off+13]>15))return 0;
+           (len && len!=8 && len!=11 && len!=12 && len!=13 && len!=14 && len!=15) || (len>=12&&a[off+11]>100) || (len>=13&&(a[off+12]<1 || a[off+12]>4)) || (len>=14&&a[off+13]>15) || (len>=15&&a[off+14]>NCOND))return 0;
         step_t *s=&trk[tr].step[index];if(len){smk37_pattern_gesture(&trk[tr],0x10000+index);smk37_ed_step_put(s,a+off,len);}
         if(cmd==30)smk37_ed_byte(tr);smk37_ed_byte(index);smk37_ed_step(s);break;}
     case 8:

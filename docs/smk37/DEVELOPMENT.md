@@ -13,7 +13,9 @@ python tools/serve_smk37.py --port 8773
 Open `http://localhost:8773/`, `/editor.html`, or `/simulator.html`.
 Python 3 is the only server dependency. The prebuilt SMK WebAssembly runtime,
 JavaScript, fonts, artwork and sample sources are in the repository. There are
-no Git submodules or sibling-checkout dependencies for the website. The server
+no submodule initialization or sibling-checkout dependencies to preview the prebuilt website.
+Rebuilding firmware or WebAssembly for 1.6.1 requires the pinned MIT engines:
+`git -c core.autocrlf=false submodule update --init firmware/engines`. The server
 defaults to no staged hardware package; browser Studio and Simulator still work.
 `tools/make_smk_site.py build/smk-site` stages the public website with relative
 paths for GitHub Pages. `.github/workflows/smk-pages.yml` deploys `main` in the

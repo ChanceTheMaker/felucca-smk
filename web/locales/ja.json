@@ -503,5 +503,16 @@
   "ui.smkInstallerTitle": "Felucca SMK — インストーラー",
   "ui.smkStudioTitle": "Felucca SMK Studio",
   "ui.audioVersionMismatch": "ブラウザー音源とStudioのバージョンが異なります。ページを再読み込みして、対応する音声ファイルを読み込んでください。",
-  "editor.smkSampleSetup": "有効なサンプルスロットがありません。サンプル保存対応ビルドでは、SMK の NAVIGATE → SYSTEM → SAMPLE STORAGE を開き、初期化後に再接続してください。初期化すると純正サンプルデータが置き換わるため、純正ファームウェアのバックアップを保管してください。"
+  "editor.smkSampleSetup": "有効なサンプルスロットがありません。サンプル保存対応ビルドでは、SMK の NAVIGATE → SYSTEM → SAMPLE STORAGE を開き、初期化後に再接続してください。初期化すると純正サンプルデータが置き換わるため、純正ファームウェアのバックアップを保管してください。",
+  "editor.condition": "条件",
+  "editor.customPalette": "カスタムパレット",
+  "editor.paletteBackground": "背景",
+  "editor.paletteSurface": "パネル",
+  "editor.paletteText": "文字",
+  "editor.paletteTheme": "テーマ",
+  "editor.paletteAccent": "アクセント",
+  "editor.palettePreview": "プレビュー",
+  "editor.paletteSave": "パレットを保存",
+  "editor.paletteRemove": "削除",
+  "editor.paletteCancel": "プレビューを取消"
 }
